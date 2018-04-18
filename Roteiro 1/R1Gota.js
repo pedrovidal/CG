@@ -1,6 +1,9 @@
 var dropGeometry;
 var dropMaterial
 var dropMesh;
+var rotx;
+var roty;
+var rotz;
 
 function init(){
 	var scene = new THREE.Scene();
@@ -9,13 +12,16 @@ function init(){
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
-	renderer.setSize(700, 700);
+	renderer.setSize(600, 600);
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
+	// Inicializa geometria, material e mesh
 	dropGeometry = createGeometry(60);
 	dropMaterial = createMaterial(0x0000ff, true);
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+
+	// Rotaciona para poder visualizar gota "em pe"
 	dropMesh.rotation.x -= Math.PI / 2;
 
 	scene.add(dropMesh);
@@ -34,9 +40,19 @@ function init(){
 		// wireframe: dropMaterial.wireframe,
 
 		debug: function(){
-			// console.log(this.velx, this.vely, this.velz);
-			// console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
-			console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
+			console.log(this.velx, this.vely, this.velz);
+			console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
+			// console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
+		},
+
+		iniPos: function(){
+			rotx = - Math.PI / 2;
+			roty = 0;
+			rotz = 0;
+			this.velx = 0.0000;
+			this.vely = 0.0000;
+			this.velz = 0.0000;
+			reset();
 		}
     };
 
@@ -56,13 +72,10 @@ function init(){
 		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 		clearScene(scene);
 
-		controls.velx = 0.0000;
-		controls.vely = 0.0000;
-		controls.velz = 0.0000;
 
-		dropMesh.rotation.x = -Math.PI/2;
-		dropMesh.rotation.y = 0;
-		dropMesh.rotation.z = 0;
+		dropMesh.rotation.x = rotx;
+		dropMesh.rotation.y = roty;
+		dropMesh.rotation.z = rotz;
 		scene.add(dropMesh);
 		scene.add(camera);
 		
@@ -84,6 +97,9 @@ function init(){
     	if (controls.colorSolid){
     		controls.colorXYZ = controls.colorCircle = false;
     	}
+    	else{
+    		controls.colorSolid = true; // Uma opção tem q ser verdadeira sempre
+    	}
     	reset();
     });
     
@@ -92,6 +108,9 @@ function init(){
     	if (controls.colorXYZ){
     		controls.colorSolid = controls.colorCircle = false;
     	}
+    	else{
+    		controls.colorXYZ = true; // Uma opção tem q ser verdadeira sempre
+    	}
     	reset();
     });
     
@@ -99,6 +118,9 @@ function init(){
     colorCircleOpt.onChange(function(){
     	if (controls.colorCircle){
     		controls.colorXYZ = controls.colorSolid = false;
+    	}
+    	else{
+    		controls.colorCircle = true; // Uma opção tem q ser verdadeira sempre
     	}
     	reset();
     });
@@ -113,10 +135,11 @@ function init(){
 	meshGui.open();
 
 	var rotationGui = gui.addFolder('Rotation');
-	rotationGui.add(controls, 'velx', -0.01, 0.01);
-	rotationGui.add(controls, 'vely', -0.01, 0.01);
-	rotationGui.add(controls, 'velz', -0.01, 0.01);
-	rotationGui.add(controls, 'debug');
+	rotationGui.add(controls, 'velx', -0.001, 0.001).listen();
+	rotationGui.add(controls, 'vely', -0.001, 0.001).listen();
+	rotationGui.add(controls, 'velz', -0.001, 0.001).listen();
+	rotationGui.add(controls, 'iniPos').listen();
+	rotationGui.add(controls, 'debug').listen();
 	rotationGui.open()
 
 
@@ -125,6 +148,9 @@ function init(){
 				dropMesh.rotation.x += controls.velx;
 				dropMesh.rotation.y += controls.vely;
 				dropMesh.rotation.z += controls.velz;
+				rotx = dropMesh.rotation.x;
+				roty = dropMesh.rotation.y;
+				rotz = dropMesh.rotation.z;
 				renderer.clear();
 				renderer.render(scene, camera);
 	};
