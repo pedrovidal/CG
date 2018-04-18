@@ -13,53 +13,72 @@ function init(){
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-	dropGeometry = createGeometry(64);
-
-	// colorVertices(dropGeometry);
-
+	dropGeometry = createGeometry(60);
 	dropMaterial = createMaterial(true);
-
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+	dropMesh.rotation.x -= Math.PI / 2;
 
 	scene.add(dropMesh);
-
-	// dropMesh.rotation.x -= Math.PI / 2;
-
 
 	var controls = {
 		numVertices: 60,
 		color: dropMaterial.color.getStyle(),
-		wireframe: dropMaterial.wireframe,
-		reset: function(){
-			dropGeometry = createGeometry(Math.round(this.numVertices));
-			dropMaterial = createMaterial(this.wireframe);
-			dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
-			scene.add(dropMesh);
-			renderer.clear();
-			animate();
-		}
+		wireframe: true,
+		velx: 0,
+		vely: 0,
+		velz: 0
+		// wireframe: dropMaterial.wireframe,
     };
+
+	var reset = function(){
+		dropGeometry = createGeometry(Math.round(controls.numVertices));
+		dropMaterial = createMaterial(controls.wireframe);
+		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+		clearScene(scene);
+
+		dropMesh.rotation.x = -Math.PI/2;
+		dropMesh.rotation.y = 0;
+		dropMesh.rotation.z = 0;
+
+		controls.velx = 0;
+		controls.vely = 0;
+		controls.velz = 0;
+
+
+		scene.add(dropMesh);
+		scene.add(camera);
+		
+		renderer.clear();
+		animate();
+	}
 
 	// Cria GUI
 	var gui = new dat.GUI();
 	var cor = gui.addFolder('Cor');
-	cor.add(dropMesh.material, 'wireframe').listen();
 	cor.addColor(controls, 'color').onChange(function (cor) {
             dropMaterial.color.setStyle(cor);
     });
 	cor.open();
 
 	var meshGui = gui.addFolder('Mesh');
-	meshGui.add(controls, 'reset');
-	meshGui.add(controls, 'numVertices', 3, 120).name('Numero de Vertices').listen();
+	var wireframeOpt = meshGui.add(controls, 'wireframe').listen();
+	wireframeOpt.onChange(reset);
+	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Numero de Vertices').listen();
+	numVerticesOpt.onChange(reset);
 	meshGui.open();
+
+	var rotationGui = gui.addFolder('Rotation');
+	rotationGui.add(controls, 'velx', -0.01, 0.01);
+	rotationGui.add(controls, 'vely', -0.01, 0.01);
+	rotationGui.add(controls, 'velz', -0.01, 0.01);
+	rotationGui.open()
+
 
 	var animate = function () {
 				requestAnimationFrame( animate );
-
-				dropMesh.rotation.x += 0.01;
-				dropMesh.rotation.y += 0.01;
-				dropMesh.rotation.z += 0.01;
+				dropMesh.rotation.x += controls.velx;
+				dropMesh.rotation.y += controls.vely;
+				dropMesh.rotation.z += controls.velz;
 				renderer.clear();
 				renderer.render(scene, camera);
 	};
@@ -68,17 +87,20 @@ function init(){
 }
 
 function createMaterial(wireframeStatus){
+	// DEBUG
+	// console.log(wireframeStatus);
 	var dropMaterial = new THREE.MeshBasicMaterial({
 		color:0x7777ff,
 		vertexColors:THREE.VertexColors,
 		// side:THREE.DoubleSide,
-		// wireframe:wireframeStatus
+		wireframe:wireframeStatus
 	})
 	return dropMaterial;
 }
 
 function createGeometry(numVertices){
-	console.log(numVertices);
+	// DEBUG
+	// console.log(numVertices);
 
 	var geometry = new THREE.Geometry();
 
@@ -126,4 +148,10 @@ function createGeometry(numVertices){
 	}
 
 	return geometry;
+}
+
+function clearScene(scene){
+	while(scene.children.length > 0){ 
+    	scene.remove(scene.children[0]); 
+	}
 }
