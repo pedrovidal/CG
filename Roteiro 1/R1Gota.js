@@ -27,25 +27,42 @@ function init(){
 		wireframe: true,
 		velx: 0,
 		vely: 0,
-		velz: 0
+		velz: 0,
+		colorSolid:true,
+		colorXYZ: false,
+		colorCircle: false,
 		// wireframe: dropMaterial.wireframe,
+
+		debug: function(){
+			// console.log(this.velx, this.vely, this.velz);
+			// console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
+			console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
+		}
     };
 
 	var reset = function(){
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
-		dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
+		if (controls.colorSolid){
+			dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
+		}
+		else if (controls.colorXYZ){
+			dropGeometry = colorXYZBased(dropGeometry);
+			dropMaterial = createMaterial(0xffffff, controls.wireframe);
+		}
+		else{
+			// DEBUG
+			console.log('else', Math.trunc(controls.colorOption));
+		}
 		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 		clearScene(scene);
+
+		controls.velx = 0.0000;
+		controls.vely = 0.0000;
+		controls.velz = 0.0000;
 
 		dropMesh.rotation.x = -Math.PI/2;
 		dropMesh.rotation.y = 0;
 		dropMesh.rotation.z = 0;
-
-		controls.velx = 0;
-		controls.vely = 0;
-		controls.velz = 0;
-
-
 		scene.add(dropMesh);
 		scene.add(camera);
 		
@@ -55,12 +72,38 @@ function init(){
 
 	// Cria GUI
 	var gui = new dat.GUI();
-	var cor = gui.addFolder('Cor');
-	cor.addColor(controls, 'color').onChange(function (cor) {
+	var colorGui = gui.addFolder('Cor');
+	colorGui.addColor(controls, 'color').onChange(function (cor) {
 		controls.actualColor = cor;
-		dropMaterial.color.setStyle(cor);
+		if (controls.colorSolid){
+			dropMaterial.color.setStyle(cor);
+		}
     });
-	cor.open();
+    var colorSolidOpt = colorGui.add(controls, 'colorSolid',).listen();
+    colorSolidOpt.onChange(function(){
+    	if (controls.colorSolid){
+    		controls.colorXYZ = controls.colorCircle = false;
+    	}
+    	reset();
+    });
+    
+    var colorXYZOpt = colorGui.add(controls, 'colorXYZ',).listen();
+    colorXYZOpt.onChange(function(){
+    	if (controls.colorXYZ){
+    		controls.colorSolid = controls.colorCircle = false;
+    	}
+    	reset();
+    });
+    
+    var colorCircleOpt = colorGui.add(controls, 'colorCircle',).listen();
+    colorCircleOpt.onChange(function(){
+    	if (controls.colorCircle){
+    		controls.colorXYZ = controls.colorSolid = false;
+    	}
+    	reset();
+    });
+
+	colorGui.open();
 
 	var meshGui = gui.addFolder('Mesh');
 	var wireframeOpt = meshGui.add(controls, 'wireframe').listen();
@@ -73,6 +116,7 @@ function init(){
 	rotationGui.add(controls, 'velx', -0.01, 0.01);
 	rotationGui.add(controls, 'vely', -0.01, 0.01);
 	rotationGui.add(controls, 'velz', -0.01, 0.01);
+	rotationGui.add(controls, 'debug');
 	rotationGui.open()
 
 
@@ -93,7 +137,7 @@ function createMaterial(actualColor, wireframeStatus){
 	// console.log(wireframeStatus);
 	var dropMaterial = new THREE.MeshBasicMaterial({
 		color:actualColor,
-		vertexColors:THREE.VertexColors,
+		vertexColors:THREE.FaceColors,
 		// side:THREE.DoubleSide,
 		wireframe:wireframeStatus
 	})
@@ -156,4 +200,40 @@ function clearScene(scene){
 	while(scene.children.length > 0){ 
     	scene.remove(scene.children[0]); 
 	}
+}
+
+function colorXYZBased(geometry){
+	var minx = miny = minz = 500;
+	var maxx = maxy = maxz = -500;
+
+	for (i = 0; i < geometry.vertices.length; i++){
+		minx = Math.min(geometry.vertices[i].x, minx);
+		maxx = Math.max(geometry.vertices[i].x, maxx);
+		miny = Math.min(geometry.vertices[i].y, miny);
+		maxy = Math.max(geometry.vertices[i].y, maxy);
+		minz = Math.min(geometry.vertices[i].z, minz);
+		maxz = Math.max(geometry.vertices[i].z, maxz);
+	}
+
+	for (i = 0; i < geometry.faces.length; i++){
+		var r1 = (geometry.vertices[geometry.faces[i].a].x - minx) / (maxx - minx);
+		var g1 = (geometry.vertices[geometry.faces[i].a].y - miny) / (maxy - miny);
+		var b1 = (geometry.vertices[geometry.faces[i].a].z - minz) / (maxz - minz);
+		var color1 = new THREE.Color(r1, g1, b1);
+		geometry.faces[i].vertexColors[0] = color1;
+
+		var r2 = (geometry.vertices[geometry.faces[i].b].x - minx) / (maxx - minx);
+		var g2 = (geometry.vertices[geometry.faces[i].b].y - miny) / (maxy - miny);
+		var b2 = (geometry.vertices[geometry.faces[i].b].z - minz) / (maxz - minz);
+		var color2 = new THREE.Color(r2, g2, b2);
+		geometry.faces[i].vertexColors[1] = color2;
+
+		var r3 = (geometry.vertices[geometry.faces[i].c].x - minx) / (maxx - minx);
+		var g3 = (geometry.vertices[geometry.faces[i].c].y - miny) / (maxy - miny);
+		var b3 = (geometry.vertices[geometry.faces[i].c].z - minz) / (maxz - minz);
+		var color3 = new THREE.Color(r3, g3, b3);
+		geometry.faces[i].vertexColors[2] = color3;
+	}
+
+	return geometry;
 }
