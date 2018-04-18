@@ -14,7 +14,7 @@ function init(){
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 	dropGeometry = createGeometry(60);
-	dropMaterial = createMaterial(true);
+	dropMaterial = createMaterial(0x0000ff, true);
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 	dropMesh.rotation.x -= Math.PI / 2;
 
@@ -23,6 +23,7 @@ function init(){
 	var controls = {
 		numVertices: 60,
 		color: dropMaterial.color.getStyle(),
+		actualColor: 0x0000ff,
 		wireframe: true,
 		velx: 0,
 		vely: 0,
@@ -32,7 +33,7 @@ function init(){
 
 	var reset = function(){
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
-		dropMaterial = createMaterial(controls.wireframe);
+		dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
 		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 		clearScene(scene);
 
@@ -56,7 +57,8 @@ function init(){
 	var gui = new dat.GUI();
 	var cor = gui.addFolder('Cor');
 	cor.addColor(controls, 'color').onChange(function (cor) {
-            dropMaterial.color.setStyle(cor);
+		controls.actualColor = cor;
+		dropMaterial.color.setStyle(cor);
     });
 	cor.open();
 
@@ -86,11 +88,11 @@ function init(){
 	animate();
 }
 
-function createMaterial(wireframeStatus){
+function createMaterial(actualColor, wireframeStatus){
 	// DEBUG
 	// console.log(wireframeStatus);
 	var dropMaterial = new THREE.MeshBasicMaterial({
-		color:0x7777ff,
+		color:actualColor,
 		vertexColors:THREE.VertexColors,
 		// side:THREE.DoubleSide,
 		wireframe:wireframeStatus
