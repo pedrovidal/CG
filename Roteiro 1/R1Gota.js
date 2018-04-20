@@ -9,7 +9,7 @@ var roty;
 var rotz;
 
 // Guarda cores com base nas coordenadas circulares pra cada vertice
-var circleColor;
+var circleColor = [];
 
 function init(){
 	var scene = new THREE.Scene();
@@ -87,9 +87,10 @@ function init(){
 			dropMaterial = createMaterial(0xffffff, controls.wireframe);
 		}
 		else{
+			dropGeometry = colorCircleBased(dropGeometry);
 			dropMaterial = createMaterial(0xffffff, controls.wireframe);
 			// DEBUG
-			console.log('else', Math.trunc(controls.colorOption));
+			// console.log('else', Math.trunc(controls.colorOption));
 		}
 
 		//cria mesh
@@ -214,8 +215,12 @@ function createGeometry(numVertices){
 	var minz = 5000;
 	var maxz = -5000;
 
+	var cont = 0;
+
+	circleColor = [];
+
 	for (i = 0; i <= numVertices; i++){
-		var omega = i * 2* Math.PI / numVertices;
+		var omega = i * 2 * Math.PI / numVertices;
 		for (j = 0; j <= numVertices; j++){
 			var theta = j * Math.PI / numVertices;
 			var x = 0.5 * ( (1 - Math.cos(theta)) * Math.sin(theta) * Math.cos(omega) );
@@ -226,7 +231,12 @@ function createGeometry(numVertices){
 			geometry.vertices.push(new THREE.Vector3(x, y, z));
 
 			// vetor com cores baseadas nas coordenadas esfericas
-			circleColor.push(new THREE.Color(Math.accos(omega)/Math.PI, , 1);
+			var hslColor = "hsl(" + (omega * 180 / Math.PI).toString() +  ",  100%, " + (Math.round( 100 - ( 100 * (theta / Math.PI)  ) ) ).toString() + "%)";
+			// Debug
+			// console.log(z , Math.round( ( 100 * ((z + 1) / 2))));
+			circleColor.push(new THREE.Color(hslColor));
+
+			cont++
 		}
 	}
 
@@ -299,6 +309,16 @@ function colorXYZBased(geometry){
 		var b3 = (geometry.vertices[geometry.faces[i].c].z - minz) / (maxz - minz);
 		var color3 = new THREE.Color(r3, g3, b3);
 		geometry.faces[i].vertexColors[2] = color3;
+	}
+
+	return geometry;
+}
+
+function colorCircleBased(geometry){
+	for (i = 0; i < geometry.faces.length; i++){
+		geometry.faces[i].vertexColors[0] = circleColor[geometry.faces[i].a];
+		geometry.faces[i].vertexColors[1] = circleColor[geometry.faces[i].b];
+		geometry.faces[i].vertexColors[2] = circleColor[geometry.faces[i].c];
 	}
 
 	return geometry;
