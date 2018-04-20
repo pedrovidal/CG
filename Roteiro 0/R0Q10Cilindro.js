@@ -15,14 +15,15 @@ function init(){
 	var cilindroGeometry = new THREE.Geometry();
 	cilindroGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.5));
 
-	for (i = 0; i <= 2*Math.PI; i+=(2*Math.PI)/numVertices){
-		var x = raio * Math.cos(i);
-		var y = raio * Math.sin(i);
+	for (i = 0; i <= numVertices; i++){
+		var ang = i * 2 * Math.PI / numVertices;
+		var x = raio * Math.cos(ang);
+		var y = raio * Math.sin(ang);
 		cilindroGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));	
 	}
 
 	var numFaces = 0;
-	for (i = 0; i <= numVertices; i++){
+	for (i = 0; i < cilindroGeometry.vertices.length - 1; i++){
 		cilindroGeometry.faces.push(new THREE.Face3(0, i, i+1));
 		cilindroGeometry.faces[i].vertexColors[0] = new THREE.Color( 1.0, 0.0, 1.0); 
 		cilindroGeometry.faces[i].vertexColors[1] = new THREE.Color( 1.0, 0.0, 1.0); 
@@ -32,9 +33,10 @@ function init(){
 
 	cilindroGeometry.vertices.push(new THREE.Vector3(0.0, 0.0, -0.5));
 
-	for (i = 0; i <= 2*Math.PI; i+=(2*Math.PI)/numVertices){
-		var x = raio * Math.cos(i);
-		var y = raio * Math.sin(i);
+	for (i = 0; i <= numVertices; i++){
+		var ang = i * 2 * Math.PI / numVertices;
+		var x = raio * Math.cos(ang);
+		var y = raio * Math.sin(ang);
 		cilindroGeometry.vertices.push(new THREE.Vector3(x, y, -0.5));	
 	}
 
