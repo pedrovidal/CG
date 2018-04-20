@@ -1,9 +1,15 @@
+// geometria, material e mesh da gota
 var dropGeometry;
 var dropMaterial
 var dropMesh;
+
+// guardam rotacao da malha
 var rotx;
 var roty;
 var rotz;
+
+// Guarda cores com base nas coordenadas circulares pra cada vertice
+var circleColor;
 
 function init(){
 	var scene = new THREE.Scene();
@@ -26,25 +32,36 @@ function init(){
 
 	scene.add(dropMesh);
 
+	// controles da gui
 	var controls = {
 		numVertices: 60,
 		color: dropMaterial.color.getStyle(),
+
+		// guarda cor atual da mesh
 		actualColor: 0x0000ff,
+		
 		wireframe: true,
+		
+		// guardam velocidade de rotacao da mesh
 		velx: 0,
 		vely: 0,
 		velz: 0,
+
+		// controles de opcao de cor
 		colorSolid:true,
 		colorXYZ: false,
 		colorCircle: false,
+		
 		// wireframe: dropMaterial.wireframe,
 
+		// funcao para debug
 		debug: function(){
 			console.log(this.velx, this.vely, this.velz);
 			console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
 			// console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
 		},
 
+		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
 			rotx = - Math.PI / 2;
 			roty = 0;
@@ -56,8 +73,12 @@ function init(){
 		}
     };
 
+    // funcao para recriar a gota caso algo mude
 	var reset = function(){
+		
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
+		
+		// checa opcoes de cor
 		if (controls.colorSolid){
 			dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
 		}
@@ -66,16 +87,23 @@ function init(){
 			dropMaterial = createMaterial(0xffffff, controls.wireframe);
 		}
 		else{
+			dropMaterial = createMaterial(0xffffff, controls.wireframe);
 			// DEBUG
 			console.log('else', Math.trunc(controls.colorOption));
 		}
+
+		//cria mesh
 		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+		
+		// tira mesh antiga da cena
 		clearScene(scene);
 
-
+		// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
+		// atributos sem atrapalhar animacao
 		dropMesh.rotation.x = rotx;
 		dropMesh.rotation.y = roty;
 		dropMesh.rotation.z = rotz;
+
 		scene.add(dropMesh);
 		scene.add(camera);
 		
@@ -85,13 +113,18 @@ function init(){
 
 	// Cria GUI
 	var gui = new dat.GUI();
+
+	// opcoes de cor
 	var colorGui = gui.addFolder('Cor');
+	
+	// painel de escolha de cor
 	colorGui.addColor(controls, 'color').onChange(function (cor) {
 		controls.actualColor = cor;
-		if (controls.colorSolid){
-			dropMaterial.color.setStyle(cor);
+		if (controls.colorSolid){ // se padrao escolhido for cor solida
+			dropMaterial.color.setStyle(cor); // troca para a cor escolhida
 		}
     });
+
     var colorSolidOpt = colorGui.add(controls, 'colorSolid',).listen();
     colorSolidOpt.onChange(function(){
     	if (controls.colorSolid){
@@ -127,6 +160,7 @@ function init(){
 
 	colorGui.open();
 
+	// opcoes de mesh (numero de vertices e wireframe)
 	var meshGui = gui.addFolder('Mesh');
 	var wireframeOpt = meshGui.add(controls, 'wireframe').listen();
 	wireframeOpt.onChange(reset);
@@ -134,6 +168,7 @@ function init(){
 	numVerticesOpt.onChange(reset);
 	meshGui.open();
 
+	// opcoes de velocidade de rotacao
 	var rotationGui = gui.addFolder('Rotation');
 	rotationGui.add(controls, 'velx', -0.001, 0.001).listen();
 	rotationGui.add(controls, 'vely', -0.001, 0.001).listen();
@@ -164,7 +199,7 @@ function createMaterial(actualColor, wireframeStatus){
 	var dropMaterial = new THREE.MeshBasicMaterial({
 		color:actualColor,
 		vertexColors:THREE.FaceColors,
-		// side:THREE.DoubleSide,
+		side:THREE.DoubleSide,
 		wireframe:wireframeStatus
 	})
 	return dropMaterial;
@@ -189,6 +224,9 @@ function createGeometry(numVertices){
 			minz = Math.min(minz, z);
 			maxz = Math.max(maxz, z);
 			geometry.vertices.push(new THREE.Vector3(x, y, z));
+
+			// vetor com cores baseadas nas coordenadas esfericas
+			circleColor.push(new THREE.Color(Math.accos(omega)/Math.PI, , 1);
 		}
 	}
 
@@ -222,12 +260,14 @@ function createGeometry(numVertices){
 	return geometry;
 }
 
+// remove tudo da cena
 function clearScene(scene){
 	while(scene.children.length > 0){ 
     	scene.remove(scene.children[0]); 
 	}
 }
 
+// colore faces com base nas posicoes x, y, e z dos vertices
 function colorXYZBased(geometry){
 	var minx = miny = minz = 500;
 	var maxx = maxy = maxz = -500;
