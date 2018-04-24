@@ -23,7 +23,7 @@ function init(){
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 	// Inicializa geometria, material e mesh
-	dropGeometry = createGeometry(60);
+	dropGeometry = createGeometry(40);
 	dropMaterial = createMaterial(0x0000ff, true);
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 
@@ -34,7 +34,7 @@ function init(){
 
 	// controles da gui
 	var controls = {
-		numVertices: 60,
+		numVertices: 40,
 		color: dropMaterial.color.getStyle(),
 
 		// guarda cor atual da mesh
@@ -55,11 +55,11 @@ function init(){
 		// wireframe: dropMaterial.wireframe,
 
 		// funcao para debug
-		debug: function(){
-			console.log(this.velx, this.vely, this.velz);
-			console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
-			// console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
-		},
+		// debug: function(){
+		// 	console.log(this.velx, this.vely, this.velz);
+		// 	console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
+		// 	// console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
+		// },
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
@@ -113,20 +113,20 @@ function init(){
 	}
 
 	// Cria GUI
-	var gui = new dat.GUI();
+	var gui = new dat.GUI({width: 400});
 
 	// opcoes de cor
-	var colorGui = gui.addFolder('Cor');
+	var colorGui = gui.addFolder('Color');
 	
 	// painel de escolha de cor
-	colorGui.addColor(controls, 'color').onChange(function (cor) {
+	colorGui.addColor(controls, 'color').name('RGB Color').onChange(function (cor) {
 		controls.actualColor = cor;
 		if (controls.colorSolid){ // se padrao escolhido for cor solida
 			dropMaterial.color.setStyle(cor); // troca para a cor escolhida
 		}
     });
 
-    var colorSolidOpt = colorGui.add(controls, 'colorSolid',).listen();
+    var colorSolidOpt = colorGui.add(controls, 'colorSolid').name('Solid color').listen();
     colorSolidOpt.onChange(function(){
     	if (controls.colorSolid){
     		controls.colorXYZ = controls.colorCircle = false;
@@ -137,7 +137,7 @@ function init(){
     	reset();
     });
     
-    var colorXYZOpt = colorGui.add(controls, 'colorXYZ',).listen();
+    var colorXYZOpt = colorGui.add(controls, 'colorXYZ').name('Color based on XYZ').listen();
     colorXYZOpt.onChange(function(){
     	if (controls.colorXYZ){
     		controls.colorSolid = controls.colorCircle = false;
@@ -148,7 +148,7 @@ function init(){
     	reset();
     });
     
-    var colorCircleOpt = colorGui.add(controls, 'colorCircle',).listen();
+    var colorCircleOpt = colorGui.add(controls, 'colorCircle').name('Color based on spherical coordinates').listen();
     colorCircleOpt.onChange(function(){
     	if (controls.colorCircle){
     		controls.colorXYZ = controls.colorSolid = false;
@@ -163,30 +163,36 @@ function init(){
 
 	// opcoes de mesh (numero de vertices e wireframe)
 	var meshGui = gui.addFolder('Mesh');
-	var wireframeOpt = meshGui.add(controls, 'wireframe').listen();
+	var wireframeOpt = meshGui.add(controls, 'wireframe').name('Wireframe').listen();
 	wireframeOpt.onChange(reset);
-	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Numero de Vertices').listen();
+	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
 	numVerticesOpt.onChange(reset);
 	meshGui.open();
 
 	// opcoes de velocidade de rotacao
-	var rotationGui = gui.addFolder('Rotation');
-	rotationGui.add(controls, 'velx', -0.001, 0.001).listen();
-	rotationGui.add(controls, 'vely', -0.001, 0.001).listen();
-	rotationGui.add(controls, 'velz', -0.001, 0.001).listen();
-	rotationGui.add(controls, 'iniPos').listen();
-	rotationGui.add(controls, 'debug').listen();
+	var rotationGui = gui.addFolder('Rotation Speed');
+	rotationGui.add(controls, 'velx', -0.001, 0.001).name('X').listen();
+	rotationGui.add(controls, 'vely', -0.001, 0.001).name('Y').listen();
+	rotationGui.add(controls, 'velz', -0.001, 0.001).name('Z').listen();
+	rotationGui.add(controls, 'iniPos').name('Return to initial position').listen();
+	//rotationGui.add(controls, 'debug').listen();
 	rotationGui.open()
 
-
+	// funcao para rotacionar malha automaticamente
 	var animate = function () {
 				requestAnimationFrame( animate );
+
+				// rotaciona malha com base nas velocidades escolhidas
 				dropMesh.rotation.x += controls.velx;
 				dropMesh.rotation.y += controls.vely;
 				dropMesh.rotation.z += controls.velz;
+				
+				// salva rotacao para que se outra malha precise ser criada
+				// seja colocada na mesma posicao
 				rotx = dropMesh.rotation.x;
 				roty = dropMesh.rotation.y;
 				rotz = dropMesh.rotation.z;
+				
 				renderer.clear();
 				renderer.render(scene, camera);
 	};
@@ -219,6 +225,7 @@ function createGeometry(numVertices){
 
 	circleColor = [];
 
+	// calculo das coordenadas
 	for (i = 0; i <= numVertices; i++){
 		var omega = i * 2 * Math.PI / numVertices;
 		for (j = 0; j <= numVertices; j++){
@@ -240,6 +247,7 @@ function createGeometry(numVertices){
 		}
 	}
 
+	// criacao das faces
 	for (i = 0; i < geometry.vertices.length - (numVertices + 2); i++){
 		var minzlocal = maxz;
 		var maxzlocal = minz;
@@ -279,8 +287,8 @@ function clearScene(scene){
 
 // colore faces com base nas posicoes x, y, e z dos vertices
 function colorXYZBased(geometry){
-	var minx = miny = minz = 500;
-	var maxx = maxy = maxz = -500;
+	var minx = miny = minz = 2;
+	var maxx = maxy = maxz = -2;
 
 	for (i = 0; i < geometry.vertices.length; i++){
 		minx = Math.min(geometry.vertices[i].x, minx);
@@ -315,6 +323,7 @@ function colorXYZBased(geometry){
 }
 
 function colorCircleBased(geometry){
+	// atribui cores precalculadas
 	for (i = 0; i < geometry.faces.length; i++){
 		geometry.faces[i].vertexColors[0] = circleColor[geometry.faces[i].a];
 		geometry.faces[i].vertexColors[1] = circleColor[geometry.faces[i].b];
