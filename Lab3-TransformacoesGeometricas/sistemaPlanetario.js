@@ -98,12 +98,23 @@ function render() {
 	moonMatrix.identity();
 	moon.matrix.copy(moonMatrix);
 
+
+	// girar em torno do proprio eixo
+	moonMatrix.makeTranslation(0.0, 0.0, 0.0);
+	moon.applyMatrix(moonMatrix);
+
+	moonMatrix.makeRotationY(month);
+	moon.applyMatrix(moonMatrix);
+
+
+	// girar em torno da terra
 	moonMatrix.makeTranslation(0.15, 0.0, 0.0);
 	moon.applyMatrix(moonMatrix);
 
 	moonMatrix.makeRotationY(month);
 	moon.applyMatrix(moonMatrix);
 
+	// girar em torno do sol
 	moonMatrix.makeTranslation(0.7, 0.0, 0.0);
 	moon.applyMatrix(moonMatrix);
 
