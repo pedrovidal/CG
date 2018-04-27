@@ -9,6 +9,9 @@ var year		= 0.0;
 var month		= 0.0;
 var groupEarth 	= new THREE.Object3D();
 var groupSun 	= new THREE.Object3D();
+var sunMatrix = new THREE.Matrix4();
+var earthMatrix = new THREE.Matrix4();
+var moonMatrix = new THREE.Matrix4();
 
 
 function init() {
@@ -24,15 +27,23 @@ function init() {
 
 	camera = new THREE.OrthographicCamera( -1.0, 1.0, 1.0, -1.0, -1.0, 1.0 );
 	scene.add( camera );
+
+	// esfera inicial
+	var sphereGeometry = new THREE.SphereGeometry(1, 10, 10);
 		
 	// Eixo do Sol
 	var sAxis = new THREE.AxesHelper(0.6);
 
 	// Sol
-	var sphereGeometry = new THREE.SphereGeometry( 0.4, 20, 20);                 
-	var sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, wireframe:true} );
-	sun = new THREE.Mesh( sphereGeometry, sphereMat );
+	var sunGeometry = new THREE.Geometry();                 
+	sunGeometry.copy(sphereGeometry);                 
+	var sunMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, wireframe:true} );
+	sunGeometry.scale(0.4, 0.4, 0.4);
+	sun = new THREE.Mesh( sunGeometry, sunMaterial );
 	sun.add(sAxis);
+
+
+
 	scene.add(sun);	
 	
 	// Eixo da Terra
@@ -40,9 +51,11 @@ function init() {
 
 	// Terra
 	
-	sphereGeometry = new THREE.SphereGeometry( 0.1, 20, 20);                 
-	sphereMat = new THREE.MeshBasicMaterial( {color: 0x0000ff, wireframe:true} );
-	earth = new THREE.Mesh( sphereGeometry, sphereMat );
+	var earthGeometry = new THREE.Geometry();
+	earthGeometry.copy(sphereGeometry);                 
+	var earthMaterial = new THREE.MeshBasicMaterial( {color: 0x0000ff, wireframe:true} );
+	earthGeometry.scale(0.1, 0.1, 0.1);
+	earth = new THREE.Mesh( earthGeometry, earthMaterial );
 	earth.add(tAxis);
 	earth.position.set(0.7, 0.0, 0.0);
 	scene.add( earth );	
@@ -52,9 +65,11 @@ function init() {
 
 	// Lua
 	
-	sphereGeometry = new THREE.SphereGeometry( 0.03, 10, 10 );                 
-	sphereMat = new THREE.MeshBasicMaterial( {color: 0xaaaaaa, wireframe:true} );
-	moon = new THREE.Mesh( sphereGeometry, sphereMat );
+	var moonGeometry = new THREE.Geometry();
+	moonGeometry.copy(sphereGeometry);                 
+	moonGeometry.scale(0.03, 0.03, 0.03);
+	var moonMaterial = new THREE.MeshBasicMaterial( {color: 0xaaaaaa, wireframe:true} );
+	moon = new THREE.Mesh( moonGeometry, moonMaterial );
 	moon.add(lAxis);
 	moon.position.set(0.55, 0.0, 0.0);
 	scene.add( moon );	
@@ -74,10 +89,6 @@ function init() {
 };
 
 function renderWithoutGroups() {
-	var sunMatrix = new THREE.Matrix4();
-	var earthMatrix = new THREE.Matrix4();
-	var moonMatrix = new THREE.Matrix4();
-	
 	day 	+= 0.07;
 	year 	+= 0.01;
 	month 	+= 0.04;
@@ -137,9 +148,6 @@ function renderWithoutGroups() {
 function renderWithGroups(){	
 	var groupSunMatrix = new THREE.Matrix4();
 	var groupEarthMatrix = new THREE.Matrix4();
-	var moonMatrix = new THREE.Matrix4();
-	var sunMatrix = new THREE.Matrix4();
-	var earthMatrix = new THREE.Matrix4();
 
 	year += 0.01
 	month += 0.04;
