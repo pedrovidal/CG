@@ -139,6 +139,7 @@ function renderWithGroups(){
 	var groupEarthMatrix = new THREE.Matrix4();
 	var moonMatrix = new THREE.Matrix4();
 	var sunMatrix = new THREE.Matrix4();
+	var earthMatrix = new THREE.Matrix4();
 
 	year += 0.01
 	month += 0.04;
@@ -167,7 +168,19 @@ function renderWithGroups(){
 	moon.applyMatrix(moonMatrix);
 
 	moon.updateMatrix();
-	
+
+	// earth
+	earthMatrix.identity();
+	earth.matrix.copy(earthMatrix);
+
+	// girar em torno do proprio eixo
+	earthMatrix.makeRotationY(day);
+	earth.applyMatrix(earthMatrix);
+	earthMatrix.makeTranslation(0.7, 0.0, 0.0);
+	earth.applyMatrix(earthMatrix);
+
+	earth.updateMatrix();
+
 	// groupSun
 	groupSunMatrix.identity();
 	groupSun.matrix.copy(groupSunMatrix);
