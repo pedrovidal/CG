@@ -4,6 +4,7 @@ var camera 		= null;
 var earth 		= null;
 var sun 		= null;
 var moon 		= null;
+var mars 		= null;
 var day 		= 0.0;
 var year		= 0.0;
 var month		= 0.0;
@@ -12,6 +13,7 @@ var groupSun 	= new THREE.Object3D();
 var sunMatrix = new THREE.Matrix4();
 var earthMatrix = new THREE.Matrix4();
 var moonMatrix = new THREE.Matrix4();
+var marsMatrix = new THREE.Matrix4();
 
 
 function init() {
@@ -25,18 +27,18 @@ function init() {
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-	camera = new THREE.OrthographicCamera( -1.0, 1.0, 1.0, -1.0, -1.0, 1.0 );
+	camera = new THREE.OrthographicCamera( -1.7, 1.7, 1.0, -1.0, -2.0, 2.0 );
 	scene.add( camera );
 
 	// esfera inicial
-	var sphereGeometry = new THREE.SphereGeometry(1, 10, 10);
+	var sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
 		
 	// Eixo do Sol
-	var sAxis = new THREE.AxesHelper(0.6);
+	var sAxis = new THREE.AxesHelper(0.5);
 
 	// Sol
-	var sunGeometry = new THREE.Geometry();                 
-	sunGeometry.copy(sphereGeometry);                 
+	var sunGeometry = new THREE.Geometry();
+	sunGeometry.copy(sphereGeometry);
 	var sunMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, wireframe:true} );
 	sunGeometry.scale(0.4, 0.4, 0.4);
 	sun = new THREE.Mesh( sunGeometry, sunMaterial );
@@ -52,7 +54,7 @@ function init() {
 	// Terra
 	
 	var earthGeometry = new THREE.Geometry();
-	earthGeometry.copy(sphereGeometry);                 
+	earthGeometry.copy(sphereGeometry);
 	var earthMaterial = new THREE.MeshBasicMaterial( {color: 0x0000ff, wireframe:true} );
 	earthGeometry.scale(0.1, 0.1, 0.1);
 	earth = new THREE.Mesh( earthGeometry, earthMaterial );
@@ -66,19 +68,34 @@ function init() {
 	// Lua
 	
 	var moonGeometry = new THREE.Geometry();
-	moonGeometry.copy(sphereGeometry);                 
+	moonGeometry.copy(sphereGeometry);
 	moonGeometry.scale(0.03, 0.03, 0.03);
 	var moonMaterial = new THREE.MeshBasicMaterial( {color: 0xaaaaaa, wireframe:true} );
 	moon = new THREE.Mesh( moonGeometry, moonMaterial );
 	moon.add(lAxis);
 	moon.position.set(0.55, 0.0, 0.0);
-	scene.add( moon );	
+	scene.add( moon );
+
+	// Eixo de marte
+	var marsAxis = new THREE.AxesHelper(0.3);
+
+	// Marte
+	
+	var marsGeometry = new THREE.Geometry();
+	marsGeometry.copy(sphereGeometry);
+	marsGeometry.scale(0.2, 0.2, 0.2);
+	var marsMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000, wireframe:true} );
+	mars = new THREE.Mesh( marsGeometry, marsMaterial );
+	mars.add(marsAxis);
+	mars.position.set(1.5, 0.0, 0.0);
+	scene.add( mars );	
 	
 	groupEarth.add(earth);
 	groupEarth.add(moon);
 	scene.add(groupEarth);
 
 	groupSun.add(sun);
+	groupSun.add(mars);
 	groupSun.add(groupEarth);
 	scene.add(groupSun);
 
@@ -176,6 +193,22 @@ function renderWithGroups(){
 	moon.applyMatrix(moonMatrix);
 
 	moon.updateMatrix();
+
+	// mars
+	marsMatrix.identity();
+	mars.matrix.copy(marsMatrix);
+
+	// girar em torno do proprio eixo
+	marsMatrix.makeRotationY(day);
+	mars.applyMatrix(marsMatrix);
+	marsMatrix.makeTranslation(1.5, 0.0, 0.0);
+	mars.applyMatrix(marsMatrix);
+
+	// girar em torno do sol
+	marsMatrix.makeRotationY(-year/2);
+	mars.applyMatrix(marsMatrix);
+
+	mars.updateMatrix();
 
 	// earth
 	earthMatrix.identity();
