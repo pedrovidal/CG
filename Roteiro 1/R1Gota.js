@@ -76,6 +76,12 @@ function init(){
     // funcao para recriar a gota caso algo mude
 	var reset = function(){
 		
+		// salva rotacao para que se outra malha precise ser criada
+		// seja colocada na mesma posicao
+		rotx = dropMesh.rotation.x;
+		roty = dropMesh.rotation.y;
+		rotz = dropMesh.rotation.z;
+
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
 		
 		// checa opcoes de cor
@@ -186,12 +192,6 @@ function init(){
 				dropMesh.rotation.x += controls.velx;
 				dropMesh.rotation.y += controls.vely;
 				dropMesh.rotation.z += controls.velz;
-				
-				// salva rotacao para que se outra malha precise ser criada
-				// seja colocada na mesma posicao
-				rotx = dropMesh.rotation.x;
-				roty = dropMesh.rotation.y;
-				rotz = dropMesh.rotation.z;
 				
 				renderer.clear();
 				renderer.render(scene, camera);
