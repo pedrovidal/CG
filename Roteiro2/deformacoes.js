@@ -352,11 +352,7 @@ function twistGeometry(oldGeometry){
 	var twistMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
 		var fz = f(geometry.vertices[i].z);
-		// twistMatrix.set(fz,  0, 0, 0,
-		// 				 0, fz, 0, 0,
-		// 				 0,  0, 1, 0,
-		// 				 0,  0, 0, 1);
-		twistMatrix.makeRotationZ(fz);
+		twistMatrix.makeRotationZ(fz * 10);
 		geometry.vertices[i].applyMatrix4(twistMatrix);
 	}
 	return geometry;
@@ -379,5 +375,5 @@ function taperGeometry(oldGeometry){
 }
 
 function f(z){
-	return (z - minz) / (maxz - minz);
+	return (z - minz) / (maxz - minz) * Math.PI * 2;
 }
