@@ -75,12 +75,6 @@ function init(){
 
     // funcao para recriar a gota caso algo mude
 	var reset = function(){
-		
-		// salva rotacao para que se outra malha precise ser criada
-		// seja colocada na mesma posicao
-		rotx = dropMesh.rotation.x;
-		roty = dropMesh.rotation.y;
-		rotz = dropMesh.rotation.z;
 
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
 		
@@ -187,6 +181,12 @@ function init(){
 	// funcao para rotacionar malha automaticamente
 	var animate = function () {
 				requestAnimationFrame( animate );
+
+				// salva rotacao para que se outra malha precise ser criada
+				// seja colocada na mesma posicao
+				rotx = dropMesh.rotation.x;
+				roty = dropMesh.rotation.y;
+				rotz = dropMesh.rotation.z;
 
 				// rotaciona malha com base nas velocidades escolhidas
 				dropMesh.rotation.x += controls.velx;

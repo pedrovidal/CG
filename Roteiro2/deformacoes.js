@@ -8,6 +8,9 @@ var rotx;
 var roty;
 var rotz;
 
+var minz = 5000;
+var maxz = -5000;
+
 // Guarda cores com base nas coordenadas circulares pra cada vertice
 var circleColor = [];
 
@@ -51,6 +54,7 @@ function init(){
 		colorSolid:true,
 		colorXYZ: false,
 		colorCircle: false,
+		twist: false,
 		
 		// wireframe: dropMaterial.wireframe,
 
@@ -70,18 +74,13 @@ function init(){
 			this.vely = 0.0000;
 			this.velz = 0.0000;
 			reset();
-		}
+		},
+
     };
 
     // funcao para recriar a gota caso algo mude
 	var reset = function(){
 		
-		// salva rotacao para que se outra malha precise ser criada
-		// seja colocada na mesma posicao
-		rotx = dropMesh.rotation.x;
-		roty = dropMesh.rotation.y;
-		rotz = dropMesh.rotation.z;
-
 		dropGeometry = createGeometry(Math.round(controls.numVertices));
 		
 		// checa opcoes de cor
@@ -97,6 +96,10 @@ function init(){
 			dropMaterial = createMaterial(0xffffff, controls.wireframe);
 			// DEBUG
 			// console.log('else', Math.trunc(controls.colorOption));
+		}
+
+		if (controls.twist){
+			dropGeometry = twistGeometry(dropGeometry);
 		}
 
 		//cria mesh
@@ -173,6 +176,8 @@ function init(){
 	wireframeOpt.onChange(reset);
 	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
 	numVerticesOpt.onChange(reset);
+	var twistOpt = meshGui.add(controls, 'twist').name('Twist').listen();
+	twistOpt.onChange(reset);
 	meshGui.open();
 
 	// opcoes de velocidade de rotacao
@@ -187,6 +192,12 @@ function init(){
 	// funcao para rotacionar malha automaticamente
 	var animate = function () {
 				requestAnimationFrame( animate );
+
+				// salva rotacao para que se outra malha precise ser criada
+				// seja colocada na mesma posicao
+				rotx = dropMesh.rotation.x;
+				roty = dropMesh.rotation.y;
+				rotz = dropMesh.rotation.z;
 
 				// rotaciona malha com base nas velocidades escolhidas
 				dropMesh.rotation.x += controls.velx;
@@ -218,10 +229,11 @@ function createGeometry(numVertices){
 
 	var geometry = new THREE.Geometry();
 
-	var minz = 5000;
-	var maxz = -5000;
-
 	var cont = 0;
+
+	minz = 5000;
+	maxz = -5000;
+
 
 	circleColor = [];
 
@@ -331,4 +343,41 @@ function colorCircleBased(geometry){
 	}
 
 	return geometry;
+}
+
+function twistGeometry(oldGeometry){
+	console.log('On twist: ');
+	var geometry = new THREE.Geometry();
+	geometry = oldGeometry;
+	var twistMatrix = new THREE.Matrix4();
+	for (i = 0; i < geometry.vertices.length; i++){
+		var fz = f(geometry.vertices[i].z);
+		// twistMatrix.set(fz,  0, 0, 0,
+		// 				 0, fz, 0, 0,
+		// 				 0,  0, 1, 0,
+		// 				 0,  0, 0, 1);
+		twistMatrix.makeRotationZ(fz);
+		geometry.vertices[i].applyMatrix4(twistMatrix);
+	}
+	return geometry;
+}
+
+function taperGeometry(oldGeometry){
+	console.log('On taper: ');
+	var geometry = new THREE.Geometry();
+	geometry = oldGeometry;
+	var taperMatrix = new THREE.Matrix4();
+	for (i = 0; i < geometry.vertices.length; i++){
+		var fz = f(geometry.vertices[i].z);
+		twistMatrix.set(fz,  0, 0, 0,
+						 0, fz, 0, 0,
+						 0,  0, 1, 0,
+						 0,  0, 0, 1);
+		geometry.vertices[i].applyMatrix4(twistMatrix);
+	}
+	return geometry;
+}
+
+function f(z){
+	return (z - minz) / (maxz - minz);
 }
