@@ -17,7 +17,7 @@ var circleColor = [];
 function init(){
 	var scene = new THREE.Scene();
 	var renderer = new THREE.WebGLRenderer();
-	var camera = new THREE.OrthographicCamera(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
+	var camera = new THREE.OrthographicCamera(-1.0, 1.0, 1.0, -1.0, -5.0, 5.0);
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
@@ -55,6 +55,8 @@ function init(){
 		colorXYZ: false,
 		colorCircle: false,
 		twist: false,
+		taper: false,
+		shear: false,
 		
 		// wireframe: dropMaterial.wireframe,
 
@@ -100,6 +102,14 @@ function init(){
 
 		if (controls.twist){
 			dropGeometry = twistGeometry(dropGeometry);
+		}
+
+		if (controls.taper){
+			dropGeometry = taperGeometry(dropGeometry);
+		}
+
+		if (controls.shear){
+			dropGeometry = shearGeometry(dropGeometry);
 		}
 
 		//cria mesh
@@ -176,8 +186,16 @@ function init(){
 	wireframeOpt.onChange(reset);
 	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
 	numVerticesOpt.onChange(reset);
+	
 	var twistOpt = meshGui.add(controls, 'twist').name('Twist').listen();
 	twistOpt.onChange(reset);
+
+	var taperOpt = meshGui.add(controls, 'taper').name('Taper').listen();
+	taperOpt.onChange(reset);
+
+	var shearOpt = meshGui.add(controls, 'shear').name('Shear').listen();
+	shearOpt.onChange(reset);
+	
 	meshGui.open();
 
 	// opcoes de velocidade de rotacao
@@ -365,11 +383,27 @@ function taperGeometry(oldGeometry){
 	var taperMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
 		var fz = f(geometry.vertices[i].z);
-		twistMatrix.set(fz,  0, 0, 0,
+		taperMatrix.set(fz,  0, 0, 0,
 						 0, fz, 0, 0,
 						 0,  0, 1, 0,
 						 0,  0, 0, 1);
-		geometry.vertices[i].applyMatrix4(twistMatrix);
+		geometry.vertices[i].applyMatrix4(taperMatrix);
+	}
+	return geometry;
+}
+
+function shearGeometry(oldGeometry){
+	console.log('On shear: ');
+	var geometry = new THREE.Geometry();
+	geometry = oldGeometry;
+	var shearMatrix = new THREE.Matrix4();
+	for (i = 0; i < geometry.vertices.length; i++){
+		var fz = f(geometry.vertices[i].z);
+		shearMatrix.set(1, 0, 0.5, 0,
+						0, 1, 0.5, 0,
+						0, 0, 1, 0,
+						0, 0, 0, 1);
+		geometry.vertices[i].applyMatrix4(shearMatrix);
 	}
 	return geometry;
 }
