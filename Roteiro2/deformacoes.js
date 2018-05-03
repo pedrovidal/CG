@@ -1,3 +1,7 @@
+var scene;
+var renderer;
+var camera;
+
 // geometria, material e mesh da gota
 var dropGeometry;
 var dropMaterial
@@ -14,14 +18,16 @@ var maxz = -5000;
 // Guarda cores com base nas coordenadas circulares pra cada vertice
 var circleColor = [];
 
+var controls;
+
 function init(){
-	var scene = new THREE.Scene();
-	var renderer = new THREE.WebGLRenderer();
-	var camera = new THREE.OrthographicCamera(-1.0, 1.0, 1.0, -1.0, -5.0, 5.0);
+	scene = new THREE.Scene();
+	renderer = new THREE.WebGLRenderer();
+	camera = new THREE.OrthographicCamera(-2.0, 2.0, 2.0, -2.0, -2.0, 2.0);
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
-	renderer.setSize(600, 600);
+	renderer.setSize(500, 500);
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -36,7 +42,7 @@ function init(){
 	scene.add(dropMesh);
 
 	// controles da gui
-	var controls = {
+	controls = {
 		numVertices: 40,
 		color: dropMaterial.color.getStyle(),
 
@@ -46,29 +52,22 @@ function init(){
 		wireframe: true,
 		
 		// guardam velocidade de rotacao da mesh
-		velx: 0,
-		vely: 0,
-		velz: 0,
+		velx: 0.0,
+		vely: 0.0,
+		velz: 0.0,
 
 		// controles de opcao de cor
 		colorSolid:true,
 		colorXYZ: false,
 		colorCircle: false,
+
+		// controles de deformacao
 		twist: false,
 		taper: false,
 		shear: false,
-		shearA: 0,
-		shearB: 0,
+		shearA: 0.0,
+		shearB: 0.0,
 		twistIntensity: 0,
-		
-		// wireframe: dropMaterial.wireframe,
-
-		// funcao para debug
-		// debug: function(){
-		// 	console.log(this.velx, this.vely, this.velz);
-		// 	console.log(dropMesh.rotation.x, dropMesh.rotation.y, dropMesh.rotation.z);
-		// 	// console.log(this.colorSolid, this.colorXYZ, this.colorCircle);
-		// },
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
@@ -81,58 +80,21 @@ function init(){
 			reset();
 		},
 
+		// retorna para forma inicial
+		iniForm: function(){
+			this.twist = false;
+			this.twistIntensity = 0;
+
+			this.taper = false;
+
+			this.shear = false;
+			this.shearA = 0;
+			this.shearB = 0;
+			reset();
+		} 
+
     };
 
-    // funcao para recriar a gota caso algo mude
-	var reset = function(){
-		
-		dropGeometry = createGeometry(Math.round(controls.numVertices));
-		
-		// checa opcoes de cor
-		if (controls.colorSolid){
-			dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
-		}
-		else if (controls.colorXYZ){
-			dropGeometry = colorXYZBased(dropGeometry);
-			dropMaterial = createMaterial(0xffffff, controls.wireframe);
-		}
-		else{
-			dropGeometry = colorCircleBased(dropGeometry);
-			dropMaterial = createMaterial(0xffffff, controls.wireframe);
-			// DEBUG
-			// console.log('else', Math.trunc(controls.colorOption));
-		}
-
-		if (controls.twist){
-			dropGeometry = twistGeometry(dropGeometry, controls.twistIntensity);
-		}
-
-		if (controls.taper){
-			dropGeometry = taperGeometry(dropGeometry);
-		}
-
-		if (controls.shear){
-			dropGeometry = shearGeometry(dropGeometry);
-		}
-
-		//cria mesh
-		dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
-		
-		// tira mesh antiga da cena
-		clearScene(scene);
-
-		// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
-		// atributos sem atrapalhar animacao
-		dropMesh.rotation.x = rotx;
-		dropMesh.rotation.y = roty;
-		dropMesh.rotation.z = rotz;
-
-		scene.add(dropMesh);
-		scene.add(camera);
-		
-		renderer.clear();
-		animate();
-	}
 
 	// Cria GUI
 	var gui = new dat.GUI({width: 400});
@@ -194,6 +156,7 @@ function init(){
 
 	// opcoes de deformacao
 	var deformsGui = gui.addFolder("Deformações");	
+	
 	var twistOpt = deformsGui.add(controls, 'twist').name('Twist').listen();
 	twistOpt.onChange(function (cor) {
 		if (!controls.twist){ // se desmarcar opcao de twist
@@ -203,23 +166,30 @@ function init(){
     });
 	var twistIntensityOpt = deformsGui.add(controls, 'twistIntensity', -10, 10).name('Intensidade do Twist').listen();
 	twistIntensityOpt.onChange(function(){
-		if (controls.twist){
+		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
-	twistIntensityOpt.onFinishChange(function(){
-		if (!controls.twist){
-			controls.twistIntensity = 0;
-		}
-	});
+	// twistIntensityOpt.onFinishChange(function(){ // se opcao estiver desmarcada nao permite mudar intensidade
+	// 	if (!controls.twist){
+	// 		controls.twistIntensity = 0;
+	// 	}
+	// });
 
 	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
 	taperOpt.onChange(reset);
-	
 
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
 	shearOpt.onChange(reset);
-	
+
+	var shearAOpt = deformsGui.add(controls, 'shearA', -1, 1).name('A').listen();
+	shearAOpt.onChange(reset);
+
+	var shearBOpt = deformsGui.add(controls, 'shearB', -1, 1).name('B').listen();
+	shearBOpt.onChange(reset);
+
+	deformsGui.add(controls, 'iniForm').name('Return to initial form').listen();
+
 	deformsGui.open();
 
 	// opcoes de velocidade de rotacao
@@ -231,26 +201,77 @@ function init(){
 	//rotationGui.add(controls, 'debug').listen();
 	rotationGui.open()
 
-	// funcao para rotacionar malha automaticamente
-	var animate = function () {
-				requestAnimationFrame( animate );
-
-				// salva rotacao para que se outra malha precise ser criada
-				// seja colocada na mesma posicao
-				rotx = dropMesh.rotation.x;
-				roty = dropMesh.rotation.y;
-				rotz = dropMesh.rotation.z;
-
-				// rotaciona malha com base nas velocidades escolhidas
-				dropMesh.rotation.x += controls.velx;
-				dropMesh.rotation.y += controls.vely;
-				dropMesh.rotation.z += controls.velz;
-				
-				renderer.clear();
-				renderer.render(scene, camera);
-	};
-
 	animate();
+}
+
+// funcao para recriar a gota caso algo mude
+function reset(){
+	
+	dropGeometry = createGeometry(Math.round(controls.numVertices));
+	
+	// checa opcoes de cor
+	if (controls.colorSolid){
+		dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
+	}
+	else if (controls.colorXYZ){
+		dropGeometry = colorXYZBased(dropGeometry);
+		dropMaterial = createMaterial(0xffffff, controls.wireframe);
+	}
+	else{
+		dropGeometry = colorCircleBased(dropGeometry);
+		dropMaterial = createMaterial(0xffffff, controls.wireframe);
+		// DEBUG
+		// console.log('else', Math.trunc(controls.colorOption));
+	}
+
+	if (controls.twist){
+		dropGeometry = twistGeometry(dropGeometry, controls.twistIntensity);
+	}
+
+	if (controls.taper){
+		dropGeometry = taperGeometry(dropGeometry);
+	}
+
+	if (controls.shear){
+		dropGeometry = shearGeometry(dropGeometry, controls.shearA, controls.shearB);
+	}
+
+	//cria mesh
+	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+	
+	// tira mesh antiga da cena
+	clearScene(scene);
+
+	// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
+	// atributos sem atrapalhar animacao
+	dropMesh.rotation.x = rotx;
+	dropMesh.rotation.y = roty;
+	dropMesh.rotation.z = rotz;
+
+	scene.add(dropMesh);
+	scene.add(camera);
+	
+	renderer.clear();
+	animate();
+}
+
+// funcao para rotacionar malha automaticamente
+function animate() {
+	requestAnimationFrame( animate );
+
+	// salva rotacao para que se outra malha precise ser criada
+	// seja colocada na mesma posicao
+	rotx = dropMesh.rotation.x;
+	roty = dropMesh.rotation.y;
+	rotz = dropMesh.rotation.z;
+
+	// rotaciona malha com base nas velocidades escolhidas
+	dropMesh.rotation.x += controls.velx;
+	dropMesh.rotation.y += controls.vely;
+	dropMesh.rotation.z += controls.velz;
+	
+	renderer.clear();
+	renderer.render(scene, camera);
 }
 
 function createMaterial(actualColor, wireframeStatus){
@@ -388,7 +409,6 @@ function colorCircleBased(geometry){
 }
 
 function twistGeometry(oldGeometry, intensity){
-	console.log('On twist: ');
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var twistMatrix = new THREE.Matrix4();
@@ -401,7 +421,6 @@ function twistGeometry(oldGeometry, intensity){
 }
 
 function taperGeometry(oldGeometry){
-	console.log('On taper: ');
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var taperMatrix = new THREE.Matrix4();
@@ -416,15 +435,14 @@ function taperGeometry(oldGeometry){
 	return geometry;
 }
 
-function shearGeometry(oldGeometry){
-	console.log('On shear: ');
+function shearGeometry(oldGeometry, a, b){
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var shearMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
 		var fz = f(geometry.vertices[i].z);
-		shearMatrix.set(1, 0, 0.5, 0,
-						0, 1, 0.5, 0,
+		shearMatrix.set(1, 0, a, 0,
+						0, 1, b, 0,
 						0, 0, 1, 0,
 						0, 0, 0, 1);
 		geometry.vertices[i].applyMatrix4(shearMatrix);
