@@ -148,9 +148,9 @@ function init(){
 	// opcoes de mesh (numero de vertices e wireframe)
 	var meshGui = gui.addFolder('Mesh');
 	var wireframeOpt = meshGui.add(controls, 'wireframe').name('Wireframe').listen();
-	wireframeOpt.onChange(reset);
+	wireframeOpt.onChange(reset());
 	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
-	numVerticesOpt.onChange(reset);
+	numVerticesOpt.onChange(reset());
 
 	meshGui.open();
 
@@ -177,16 +177,16 @@ function init(){
 	// });
 
 	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
-	taperOpt.onChange(reset);
+	taperOpt.onChange(reset());
 
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
-	shearOpt.onChange(reset);
+	shearOpt.onChange(reset());
 
 	var shearAOpt = deformsGui.add(controls, 'shearA', -1, 1).name('A').listen();
-	shearAOpt.onChange(reset);
+	shearAOpt.onChange(reset());
 
 	var shearBOpt = deformsGui.add(controls, 'shearB', -1, 1).name('B').listen();
-	shearBOpt.onChange(reset);
+	shearBOpt.onChange(reset());
 
 	deformsGui.add(controls, 'iniForm').name('Return to initial form').listen();
 
