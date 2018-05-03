@@ -57,6 +57,9 @@ function init(){
 		twist: false,
 		taper: false,
 		shear: false,
+		shearA: 0,
+		shearB: 0,
+		twistIntensity: 0,
 		
 		// wireframe: dropMaterial.wireframe,
 
@@ -101,7 +104,7 @@ function init(){
 		}
 
 		if (controls.twist){
-			dropGeometry = twistGeometry(dropGeometry);
+			dropGeometry = twistGeometry(dropGeometry, controls.twistIntensity);
 		}
 
 		if (controls.taper){
@@ -186,17 +189,38 @@ function init(){
 	wireframeOpt.onChange(reset);
 	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
 	numVerticesOpt.onChange(reset);
-	
-	var twistOpt = meshGui.add(controls, 'twist').name('Twist').listen();
-	twistOpt.onChange(reset);
 
-	var taperOpt = meshGui.add(controls, 'taper').name('Taper').listen();
+	meshGui.open();
+
+	// opcoes de deformacao
+	var deformsGui = gui.addFolder("Deformações");	
+	var twistOpt = deformsGui.add(controls, 'twist').name('Twist').listen();
+	twistOpt.onChange(function (cor) {
+		if (!controls.twist){ // se desmarcar opcao de twist
+			controls.twistIntensity = 0; // retorna intensidade para 0
+		}
+		reset();
+    });
+	var twistIntensityOpt = deformsGui.add(controls, 'twistIntensity', -10, 10).name('Intensidade do Twist').listen();
+	twistIntensityOpt.onChange(function(){
+		if (controls.twist){
+			reset();
+		}
+	});
+	twistIntensityOpt.onFinishChange(function(){
+		if (!controls.twist){
+			controls.twistIntensity = 0;
+		}
+	});
+
+	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
 	taperOpt.onChange(reset);
+	
 
-	var shearOpt = meshGui.add(controls, 'shear').name('Shear').listen();
+	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
 	shearOpt.onChange(reset);
 	
-	meshGui.open();
+	deformsGui.open();
 
 	// opcoes de velocidade de rotacao
 	var rotationGui = gui.addFolder('Rotation Speed');
@@ -363,14 +387,14 @@ function colorCircleBased(geometry){
 	return geometry;
 }
 
-function twistGeometry(oldGeometry){
+function twistGeometry(oldGeometry, intensity){
 	console.log('On twist: ');
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var twistMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
 		var fz = f(geometry.vertices[i].z);
-		twistMatrix.makeRotationZ(fz * 10);
+		twistMatrix.makeRotationZ(fz * intensity);
 		geometry.vertices[i].applyMatrix4(twistMatrix);
 	}
 	return geometry;
