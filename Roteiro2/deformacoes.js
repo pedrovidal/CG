@@ -7,10 +7,7 @@ var dropGeometry;
 var dropMaterial
 var dropMesh;
 
-// guardam rotacao da malha
-var rotx;
-var roty;
-var rotz;
+var flag = false;
 
 var minz = 5000;
 var maxz = -5000;
@@ -23,7 +20,7 @@ var controls;
 function init(){
 	scene = new THREE.Scene();
 	renderer = new THREE.WebGLRenderer();
-	camera = new THREE.OrthographicCamera(-2.0, 2.0, 2.0, -2.0, -5000.0, 5000.0);
+	camera = new THREE.OrthographicCamera(-2.5, 2.5, 2.5, -2.5, -5000.0, 5000.0);
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
@@ -72,9 +69,7 @@ function init(){
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
-			rotx = - Math.PI / 2;
-			roty = 0;
-			rotz = 0;
+			flag = true;
 			this.velx = 0.0000;
 			this.vely = 0.0000;
 			this.velz = 0.0000;
@@ -87,11 +82,11 @@ function init(){
 			this.twistIntensity = 0;
 
 			this.taper = false;
+			this.normie = 0;
 
 			this.shear = false;
 			this.shearA = 0;
 			this.shearB = 0;
-			this.normie = 0;
 			reset();
 		} 
 
@@ -163,8 +158,11 @@ function init(){
 	twistOpt.onChange(function (cor) {
 		if (!controls.twist){ // se desmarcar opcao de twist
 			controls.twistIntensity = 0; // retorna intensidade para 0
+			reset();
 		}
-		reset();
+		if (controls.twist && controls.twistIntensity != 0){
+			reset();
+		}
     });
 	var twistIntensityOpt = deformsGui.add(controls, 'twistIntensity', -10, 10).name('Intensidade do Twist').listen();
 	twistIntensityOpt.onChange(function(){
@@ -179,7 +177,12 @@ function init(){
 	// });
 
 	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
-	taperOpt.onChange(reset);
+	taperOpt.onChange(function(){
+		if (!controls.taper){
+			controls.normie = 0;
+		}
+		reset();
+	});
 
 	var normieZopt = deformsGui.add(controls, 'normie', minz, maxz - 0.01).name('Altura do Z').listen();
 	normieZopt.onChange(reset);
@@ -187,16 +190,27 @@ function init(){
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
 	shearOpt.onChange(function(){
 		if (!controls.shear){
-			controls.shearA = controls.shearB = 0; 
+			controls.shearA = controls.shearB = 0;
+			reset();
 		}
-		reset();
+		if (controls.sehar && (controls.shearA != 0 || controls.shearB != 0)){
+			reset();
+		}
 	});
 
 	var shearAOpt = deformsGui.add(controls, 'shearA', -1, 1).name('A').listen();
-	shearAOpt.onChange(reset);
+	shearAOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
 
 	var shearBOpt = deformsGui.add(controls, 'shearB', -1, 1).name('B').listen();
-	shearBOpt.onChange(reset);
+	shearBOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
 
 	deformsGui.add(controls, 'iniForm').name('Return to initial form').listen();
 
@@ -205,9 +219,9 @@ function init(){
 
 	// opcoes de velocidade de rotacao
 	var rotationGui = gui.addFolder('Rotation Speed');
-	rotationGui.add(controls, 'velx', -0.001, 0.001).name('X').listen();
-	rotationGui.add(controls, 'vely', -0.001, 0.001).name('Y').listen();
-	rotationGui.add(controls, 'velz', -0.001, 0.001).name('Z').listen();
+	rotationGui.add(controls, 'velx', -0.0001, 0.0001).name('X').listen();
+	rotationGui.add(controls, 'vely', -0.0001, 0.0001).name('Y').listen();
+	rotationGui.add(controls, 'velz', -0.0001, 0.0001).name('Z').listen();
 	rotationGui.add(controls, 'iniPos').name('Return to initial position').listen();
 	//rotationGui.add(controls, 'debug').listen();
 	rotationGui.open()
@@ -247,6 +261,9 @@ function reset(){
 		dropGeometry = shearGeometry(dropGeometry, controls.shearA, controls.shearB);
 	}
 
+	// guardam rotacao da malha
+	var rotx = dropMesh.rotation.x, roty = dropMesh.rotation.y, rotz = dropMesh.rotation.z;
+
 	//cria mesh
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 	
@@ -255,9 +272,19 @@ function reset(){
 
 	// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
 	// atributos sem atrapalhar animacao
-	dropMesh.rotation.x = rotx;
-	dropMesh.rotation.y = roty;
-	dropMesh.rotation.z = rotz;
+	if (flag){
+		// salva rotacao para que se outra malha precise ser criada
+		// seja colocada na mesma posicao
+		dropMesh.rotation.x = - Math.PI / 2;
+		dropMesh.rotation.y = 0;
+		dropMesh.rotation.z = 0;
+	}
+	else{
+		dropMesh.rotation.x = rotx;
+		dropMesh.rotation.y = roty;
+		dropMesh.rotation.z = rotz;
+	}
+	flag = false;
 
 	scene.add(dropMesh);
 	scene.add(camera);
@@ -268,13 +295,7 @@ function reset(){
 
 // funcao para rotacionar malha automaticamente
 function animate() {
-	requestAnimationFrame( animate );
-
-	// salva rotacao para que se outra malha precise ser criada
-	// seja colocada na mesma posicao
-	rotx = dropMesh.rotation.x;
-	roty = dropMesh.rotation.y;
-	rotz = dropMesh.rotation.z;
+	requestAnimationFrame(animate);
 
 	// rotaciona malha com base nas velocidades escolhidas
 	dropMesh.rotation.x += controls.velx;
@@ -424,7 +445,7 @@ function twistGeometry(oldGeometry, intensity){
 	geometry = oldGeometry;
 	var twistMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		var fz = f(geometry.vertices[i].z);
+		var fz = f(geometry.vertices[i].z, minz);
 		twistMatrix.makeRotationZ(fz * intensity);
 		geometry.vertices[i].applyMatrix4(twistMatrix);
 	}
@@ -436,7 +457,7 @@ function taperGeometry(oldGeometry){
 	geometry = oldGeometry;
 	var taperMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		var fz = f(geometry.vertices[i].z);
+		var fz = f(geometry.vertices[i].z, controls.normie);
 		taperMatrix.set(fz,  0, 0, 0,
 						 0, fz, 0, 0,
 						 0,  0, 1, 0,
@@ -451,7 +472,6 @@ function shearGeometry(oldGeometry, a, b){
 	geometry = oldGeometry;
 	var shearMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		var fz = f(geometry.vertices[i].z);
 		shearMatrix.set(1, 0, a, 0,
 						0, 1, b, 0,
 						0, 0, 1, 0,
@@ -461,6 +481,6 @@ function shearGeometry(oldGeometry, a, b){
 	return geometry;
 }
 
-function f(z){
-	return (z - controls.normie) / (maxz - controls.normie) * Math.PI * 2;
+function f(z, point){
+	return (z - point) / (maxz - point) * Math.PI * 2;
 }
