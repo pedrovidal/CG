@@ -23,7 +23,7 @@ function init() {
 	renderer = new THREE.WebGLRenderer();
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
-	renderer.setSize(window.innerWidth*0.7, window.innerHeight);
+	renderer.setSize(window.innerWidth*0.7, window.innerHeight*0.7);
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
