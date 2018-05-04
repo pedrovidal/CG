@@ -60,24 +60,26 @@ function init(){
 		velz: 0.0,
 
 		// controles de opcao de cor
-		colorSolid:true,
+		colorSolid:false,
 		colorXYZ: false,
-		colorCircle: false,
+		colorCircle: true,
 
 		// controles de deformacao
 		twist: false,
 		twistIntensityX: 0,
 		twistIntensityY: 0,
 		twistIntensityZ: 0,
-		taperX: false,
-		taperY: false,
-		taperZ: false,
+		taper: false,
 		normieX: 0.0,
 		normieY: 0.0,
 		normieZ: 0.0,
 		shear: false,
-		shearA: 0.0,
-		shearB: 0.0,
+		Sxy: 0.0,
+		Sxz: 0.0,
+		Syx: 0.0,
+		Syz: 0.0,
+		Szx: 0.0,
+		Szy: 0.0,
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
@@ -99,8 +101,13 @@ function init(){
 			this.normie = 0;
 
 			this.shear = false;
-			this.shearA = 0;
-			this.shearB = 0;
+			this.Sxy = 0.0;
+			this.Sxz = 0.0;
+			this.Syx = 0.0;
+			this.Syz = 0.0;
+			this.Szx = 0.0;
+			this.Szy = 0.0;
+
 			reset();
 		} 
 
@@ -110,58 +117,58 @@ function init(){
 	// Cria GUI
 	var gui = new dat.GUI({width: 400});
 
-	// opcoes de cor
-	var colorGui = gui.addFolder('Color');
+	// // opcoes de cor
+	// var colorGui = gui.addFolder('Color');
 	
-	// painel de escolha de cor
-	colorGui.addColor(controls, 'color').name('RGB Color').onChange(function (cor) {
-		controls.actualColor = cor;
-		if (controls.colorSolid){ // se padrao escolhido for cor solida
-			dropMaterial.color.setStyle(cor); // troca para a cor escolhida
-		}
-    });
+	// // painel de escolha de cor
+	// colorGui.addColor(controls, 'color').name('RGB Color').onChange(function (cor) {
+	// 	controls.actualColor = cor;
+	// 	if (controls.colorSolid){ // se padrao escolhido for cor solida
+	// 		dropMaterial.color.setStyle(cor); // troca para a cor escolhida
+	// 	}
+ //    });
 
-    var colorSolidOpt = colorGui.add(controls, 'colorSolid').name('Solid color').listen();
-    colorSolidOpt.onChange(function(){
-    	if (controls.colorSolid){
-    		controls.colorXYZ = controls.colorCircle = false;
-    	}
-    	else{
-    		controls.colorSolid = true; // Uma opção tem q ser verdadeira sempre
-    	}
-    	reset();
-    });
+ //    var colorSolidOpt = colorGui.add(controls, 'colorSolid').name('Solid color').listen();
+ //    colorSolidOpt.onChange(function(){
+ //    	if (controls.colorSolid){
+ //    		controls.colorXYZ = controls.colorCircle = false;
+ //    	}
+ //    	else{
+ //    		controls.colorSolid = true; // Uma opção tem q ser verdadeira sempre
+ //    	}
+ //    	reset();
+ //    });
     
-    var colorXYZOpt = colorGui.add(controls, 'colorXYZ').name('Color based on XYZ').listen();
-    colorXYZOpt.onChange(function(){
-    	if (controls.colorXYZ){
-    		controls.colorSolid = controls.colorCircle = false;
-    	}
-    	else{
-    		controls.colorXYZ = true; // Uma opção tem q ser verdadeira sempre
-    	}
-    	reset();
-    });
+ //    var colorXYZOpt = colorGui.add(controls, 'colorXYZ').name('Color based on XYZ').listen();
+ //    colorXYZOpt.onChange(function(){
+ //    	if (controls.colorXYZ){
+ //    		controls.colorSolid = controls.colorCircle = false;
+ //    	}
+ //    	else{
+ //    		controls.colorXYZ = true; // Uma opção tem q ser verdadeira sempre
+ //    	}
+ //    	reset();
+ //    });
     
-    var colorCircleOpt = colorGui.add(controls, 'colorCircle').name('Color based on spherical coordinates').listen();
-    colorCircleOpt.onChange(function(){
-    	if (controls.colorCircle){
-    		controls.colorXYZ = controls.colorSolid = false;
-    	}
-    	else{
-    		controls.colorCircle = true; // Uma opção tem q ser verdadeira sempre
-    	}
-    	reset();
-    });
+ //    var colorCircleOpt = colorGui.add(controls, 'colorCircle').name('Color based on spherical coordinates').listen();
+ //    colorCircleOpt.onChange(function(){
+ //    	if (controls.colorCircle){
+ //    		controls.colorXYZ = controls.colorSolid = false;
+ //    	}
+ //    	else{
+ //    		controls.colorCircle = true; // Uma opção tem q ser verdadeira sempre
+ //    	}
+ //    	reset();
+ //    });
 
-	colorGui.open();
+	// colorGui.open();
 
 	// opcoes de mesh (numero de vertices e wireframe)
 	var meshGui = gui.addFolder('Mesh');
 	var wireframeOpt = meshGui.add(controls, 'wireframe').name('Wireframe').listen();
 	wireframeOpt.onChange(reset);
-	var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
-	numVerticesOpt.onChange(reset);
+	// var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
+	// numVerticesOpt.onChange(reset);
 
 	meshGui.open();
 
@@ -170,31 +177,36 @@ function init(){
 	
 	var twistOpt = deformsGui.add(controls, 'twist').name('Twist').listen();
 	twistOpt.onChange(function (cor) {
+		
+		// so permite uma deformacao por vez
+		controls.taper = controls.shear = false;
+		controls.normieX = controls.normieY = controls.normieZ = 0;
+		controls.Sxy = controls.Sxz = 0;
+		controls.Syx = controls.Syz = 0;
+		controls.Szx = controls.Szy = 0;
 		if (!controls.twist){ // se desmarcar opcao de twist
-			controls.twistIntensityX = 0; // retorna intensidade para 0
-			controls.twistIntensityY = 0; // retorna intensidade para 0
-			controls.twistIntensityZ = 0; // retorna intensidade para 0
-			reset();
+			controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0; // retorna intensidade para 0
 		}
-		if (controls.twist && controls.twistIntensity != 0){
-			reset();
-		}
+		reset();
 	});
 
 	var twistIntensityXOpt = deformsGui.add(controls, 'twistIntensityX', -10, 10).name('Intensidade do Twist em X').listen();
 	twistIntensityXOpt.onChange(function(){
+		controls.twistIntensityY = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
 	var twistIntensityYOpt = deformsGui.add(controls, 'twistIntensityY', -10, 10).name('Intensidade do Twist em Y').listen();
 	twistIntensityYOpt.onChange(function(){
+		controls.twistIntensityX = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
 	var twistIntensityZOpt = deformsGui.add(controls, 'twistIntensityZ', -10, 10).name('Intensidade do Twist em Z').listen();
 	twistIntensityZOpt.onChange(function(){
+		controls.twistIntensityX = controls.twistIntensityY = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
@@ -205,71 +217,96 @@ function init(){
 	// 	}
 	// });
 
-	var taperXOpt = deformsGui.add(controls, 'taperX').name('Taper em X').listen();
-	taperXOpt.onChange(function(){
-		if (!controls.taperX){
-			controls.normieX = 0;
-		}
-		else{
-			controls.taperY = controls.taperZ = false;
-			controls.normieY = controls.normieZ = 0;
-		}
+	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
+	taperOpt.onChange(function(){
+
+		// so permite uma deformacao por vez
+		controls.twist = controls.shear = false;
+		controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
+		controls.Sxy = controls.Sxz = 0;
+		controls.Syx = controls.Syz = 0;
+		controls.Szx = controls.Szy = 0;
+
 		reset();
 	});
 
-	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).name('Ponto X').listen();
-	normieXopt.onChange(reset);
-
-	var taperYOpt = deformsGui.add(controls, 'taperY').name('Taper em Y').listen();
-	taperYOpt.onChange(function(){
-		if (!controls.taperY){
-			controls.normieY = 0;
-		}
-		else{
-			controls.taperX = controls.taperZ = false;
-			controls.normieX = controls.normieZ = 0;
-		}
+	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).name('Em X').listen();
+	normieXopt.onChange(function(){
+		controls.normieY = controls.normieZ = 0;
 		reset();
 	});
 
-	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).name('Ponto Y').listen();
-	normieYopt.onChange(reset);
-
-	var taperZOpt = deformsGui.add(controls, 'taperZ').name('Taper em Z').listen();
-	taperZOpt.onChange(function(){
-		if (!controls.taperZ){
-			controls.normieZ = 0;
-		}
-		else{
-			controls.taperX = controls.taperY = false;
-			controls.normieX = controls.normieY = 0;
-		}
+	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).name('Em Y').listen();
+	normieYopt.onChange(function(){
+		controls.normieX = controls.normieZ = 0;
 		reset();
 	});
-	
-	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).name('Ponto Z').listen();
-	normieZopt.onChange(reset);
+
+	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).name('Em Z').listen();
+	normieZopt.onChange(function(){
+		controls.normieX = controls.normieY = 0;
+		reset();
+	});
 
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
 	shearOpt.onChange(function(){
+		
+		// so permite uma deformacao por vez
+		controls.twist = controls.taper = false;
+		controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
+		controls.normieX = controls.normieY = controls.normieZ = 0;
+		
 		if (!controls.shear){
-			controls.shearA = controls.shearB = 0;
+			controls.Sxy = controls.Sxz = 0;
+			controls.Syx = controls.Syz = 0;
+			controls.Szx = controls.Szy = 0;
 			reset();
 		}
-		if (controls.sehar && (controls.shearA != 0 || controls.shearB != 0)){
-			reset();
-		}
+		reset();
 	});
 
-	var shearAOpt = deformsGui.add(controls, 'shearA', -1, 1).name('A').listen();
-	shearAOpt.onChange(function(){
+	var shearXYOpt = deformsGui.add(controls, 'Sxy', -1, 1).name('Shear de X em Y').listen();
+	shearXYOpt.onChange(function(){
 		if (controls.shear){
 			reset();
 		}
 	});
 
-	var shearBOpt = deformsGui.add(controls, 'shearB', -1, 1).name('B').listen();
-	shearBOpt.onChange(function(){
+
+	var shearXzOpt = deformsGui.add(controls, 'Sxz', -1, 1).name('Shear de X em Z').listen();
+	shearXzOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
+
+
+	var shearYXOpt = deformsGui.add(controls, 'Syx', -1, 1).name('Shear de Y em X').listen();
+	shearYXOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
+
+
+	var shearYZOpt = deformsGui.add(controls, 'Syz', -1, 1).name('Shear de Y em Z').listen();
+	shearYZOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
+
+
+	var shearZXOpt = deformsGui.add(controls, 'Szx', -1, 1).name('Shear de Z em X').listen();
+	shearZXOpt.onChange(function(){
+		if (controls.shear){
+			reset();
+		}
+	});
+
+
+	var shearZYOpt = deformsGui.add(controls, 'Szy', -1, 1).name('Shear de Z em Y').listen();
+	shearZYOpt.onChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -316,12 +353,12 @@ function reset(){
 		dropGeometry = twistGeometry(dropGeometry, controls.twistIntensityX, controls.twistIntensityY, controls.twistIntensityZ);
 	}
 
-	if (controls.taperX || controls.taperY || controls.taperZ){
+	if (controls.taper){
 		dropGeometry = taperGeometry(dropGeometry);
 	}
 
 	if (controls.shear){
-		dropGeometry = shearGeometry(dropGeometry, controls.shearA, controls.shearB);
+		dropGeometry = shearGeometry(dropGeometry);
 	}
 
 	// guardam rotacao da malha
@@ -532,7 +569,7 @@ function taperGeometry(oldGeometry){
 	var taperMatrixY = new THREE.Matrix4();
 	var taperMatrixZ = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		if (controls.taperX){
+		if (controls.normieX != 0){
 			console.log("X");
 			var fx = f(geometry.vertices[i].x, controls.normieX, maxx);
 			taperMatrixX.set(1,  0,  0, 0,
@@ -542,7 +579,7 @@ function taperGeometry(oldGeometry){
 			geometry.vertices[i].applyMatrix4(taperMatrixX);
 		}
 
-		if (controls.taperY){
+		if (controls.normieY != 0){
 			console.log("Y");
 			var fy = f(geometry.vertices[i].y, controls.normieY, maxy);
 			taperMatrixY.set(fy, 0,  0, 0,
@@ -552,7 +589,7 @@ function taperGeometry(oldGeometry){
 			geometry.vertices[i].applyMatrix4(taperMatrixY);
 		}
 	
-		if (controls.taperZ){
+		if (controls.normieZ != 0){
 			console.log("Z");
 			var fz = f(geometry.vertices[i].z, controls.normieZ, maxz);
 			taperMatrixZ.set(fz,  0, 0, 0,
@@ -565,15 +602,15 @@ function taperGeometry(oldGeometry){
 	return geometry;
 }
 
-function shearGeometry(oldGeometry, a, b){
+function shearGeometry(oldGeometry){
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var shearMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		shearMatrix.set(1, 0, a, 0,
-						0, 1, b, 0,
-						0, 0, 1, 0,
-						0, 0, 0, 1);
+		shearMatrix.set(            1, controls.Syx, controls.Szx, 0,
+						 controls.Sxy,            1, controls.Szy, 0,
+						 controls.Sxz, controls.Syz,            1, 0,
+						             0,           0,            0, 1);
 		geometry.vertices[i].applyMatrix4(shearMatrix);
 	}
 	return geometry;
