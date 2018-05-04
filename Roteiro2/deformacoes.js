@@ -9,6 +9,12 @@ var dropMesh;
 
 var flag = false;
 
+var minx = 5000;
+var maxx = -5000;
+
+var miny = 5000;
+var maxy = -5000;
+
 var minz = 5000;
 var maxz = -5000;
 
@@ -60,9 +66,15 @@ function init(){
 
 		// controles de deformacao
 		twist: false,
-		twistIntensity: 0,
-		taper: false,
-		normie: 0.0,
+		twistIntensityX: 0,
+		twistIntensityY: 0,
+		twistIntensityZ: 0,
+		taperX: false,
+		taperY: false,
+		taperZ: false,
+		normieX: 0.0,
+		normieY: 0.0,
+		normieZ: 0.0,
 		shear: false,
 		shearA: 0.0,
 		shearB: 0.0,
@@ -79,7 +91,9 @@ function init(){
 		// retorna para forma inicial
 		iniForm: function(){
 			this.twist = false;
-			this.twistIntensity = 0;
+			this.twistIntensityX = 0;
+			this.twistIntensityY = 0;
+			this.twistIntensityZ = 0;
 
 			this.taper = false;
 			this.normie = 0;
@@ -157,15 +171,30 @@ function init(){
 	var twistOpt = deformsGui.add(controls, 'twist').name('Twist').listen();
 	twistOpt.onChange(function (cor) {
 		if (!controls.twist){ // se desmarcar opcao de twist
-			controls.twistIntensity = 0; // retorna intensidade para 0
+			controls.twistIntensityX = 0; // retorna intensidade para 0
+			controls.twistIntensityY = 0; // retorna intensidade para 0
+			controls.twistIntensityZ = 0; // retorna intensidade para 0
 			reset();
 		}
 		if (controls.twist && controls.twistIntensity != 0){
 			reset();
 		}
-    });
-	var twistIntensityOpt = deformsGui.add(controls, 'twistIntensity', -10, 10).name('Intensidade do Twist').listen();
-	twistIntensityOpt.onChange(function(){
+	});
+
+	var twistIntensityXOpt = deformsGui.add(controls, 'twistIntensityX', -10, 10).name('Intensidade do Twist em X').listen();
+	twistIntensityXOpt.onChange(function(){
+		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
+			reset();
+		}
+	});
+	var twistIntensityYOpt = deformsGui.add(controls, 'twistIntensityY', -10, 10).name('Intensidade do Twist em Y').listen();
+	twistIntensityYOpt.onChange(function(){
+		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
+			reset();
+		}
+	});
+	var twistIntensityZOpt = deformsGui.add(controls, 'twistIntensityZ', -10, 10).name('Intensidade do Twist em Z').listen();
+	twistIntensityZOpt.onChange(function(){
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
@@ -176,15 +205,49 @@ function init(){
 	// 	}
 	// });
 
-	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
-	taperOpt.onChange(function(){
-		if (!controls.taper){
-			controls.normie = 0;
+	var taperXOpt = deformsGui.add(controls, 'taperX').name('Taper em X').listen();
+	taperXOpt.onChange(function(){
+		if (!controls.taperX){
+			controls.normieX = 0;
+		}
+		else{
+			controls.taperY = controls.taperZ = false;
+			controls.normieY = controls.normieZ = 0;
 		}
 		reset();
 	});
 
-	var normieZopt = deformsGui.add(controls, 'normie', minz, maxz - 0.01).name('Altura do Z').listen();
+	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).name('Ponto X').listen();
+	normieXopt.onChange(reset);
+
+	var taperYOpt = deformsGui.add(controls, 'taperY').name('Taper em Y').listen();
+	taperYOpt.onChange(function(){
+		if (!controls.taperY){
+			controls.normieY = 0;
+		}
+		else{
+			controls.taperX = controls.taperZ = false;
+			controls.normieX = controls.normieZ = 0;
+		}
+		reset();
+	});
+
+	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).name('Ponto Y').listen();
+	normieYopt.onChange(reset);
+
+	var taperZOpt = deformsGui.add(controls, 'taperZ').name('Taper em Z').listen();
+	taperZOpt.onChange(function(){
+		if (!controls.taperZ){
+			controls.normieZ = 0;
+		}
+		else{
+			controls.taperX = controls.taperY = false;
+			controls.normieX = controls.normieY = 0;
+		}
+		reset();
+	});
+	
+	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).name('Ponto Z').listen();
 	normieZopt.onChange(reset);
 
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
@@ -250,10 +313,10 @@ function reset(){
 	}
 
 	if (controls.twist){
-		dropGeometry = twistGeometry(dropGeometry, controls.twistIntensity);
+		dropGeometry = twistGeometry(dropGeometry, controls.twistIntensityX, controls.twistIntensityY, controls.twistIntensityZ);
 	}
 
-	if (controls.taper){
+	if (controls.taperX || controls.taperY || controls.taperZ){
 		dropGeometry = taperGeometry(dropGeometry);
 	}
 
@@ -326,9 +389,14 @@ function createGeometry(numVertices){
 
 	var cont = 0;
 
+	minx = 5000;
+	maxx = -5000;
+
+	miny = 5000;
+	maxy = -5000;
+
 	minz = 5000;
 	maxz = -5000;
-
 
 	circleColor = [];
 
@@ -340,8 +408,15 @@ function createGeometry(numVertices){
 			var x = 0.5 * ( (1 - Math.cos(theta)) * Math.sin(theta) * Math.cos(omega) );
 			var y = 0.5 * ( (1 - Math.cos(theta)) * Math.sin(theta) * Math.sin(omega) );
 			var z = Math.cos(theta);
+
+			// calculo de minimos e maximos
+			minx = Math.min(minx, x);
+			miny = Math.min(miny, y);
 			minz = Math.min(minz, z);
+			maxx = Math.max(maxx, x);
+			maxy = Math.max(maxy, y);
 			maxz = Math.max(maxz, z);
+			
 			geometry.vertices.push(new THREE.Vector3(x, y, z));
 
 			// vetor com cores baseadas nas coordenadas esfericas
@@ -394,18 +469,6 @@ function clearScene(scene){
 
 // colore faces com base nas posicoes x, y, e z dos vertices
 function colorXYZBased(geometry){
-	var minx = miny = minz = 2;
-	var maxx = maxy = maxz = -2;
-
-	for (i = 0; i < geometry.vertices.length; i++){
-		minx = Math.min(geometry.vertices[i].x, minx);
-		maxx = Math.max(geometry.vertices[i].x, maxx);
-		miny = Math.min(geometry.vertices[i].y, miny);
-		maxy = Math.max(geometry.vertices[i].y, maxy);
-		minz = Math.min(geometry.vertices[i].z, minz);
-		maxz = Math.max(geometry.vertices[i].z, maxz);
-	}
-
 	for (i = 0; i < geometry.faces.length; i++){
 		var r1 = (geometry.vertices[geometry.faces[i].a].x - minx) / (maxx - minx);
 		var g1 = (geometry.vertices[geometry.faces[i].a].y - miny) / (maxy - miny);
@@ -440,29 +503,64 @@ function colorCircleBased(geometry){
 	return geometry;
 }
 
-function twistGeometry(oldGeometry, intensity){
+function twistGeometry(oldGeometry, intensityX, intensityY, intensityZ){
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var twistMatrix = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		var fz = f(geometry.vertices[i].z, minz);
-		twistMatrix.makeRotationZ(fz * intensity);
+		var fx = f(geometry.vertices[i].x, minx, maxx);
+		var fy = f(geometry.vertices[i].y, miny, maxy);
+		var fz = f(geometry.vertices[i].z, minz, maxz);
+		
+		twistMatrix.makeRotationX(fx * intensityX);
+		geometry.vertices[i].applyMatrix4(twistMatrix);
+
+		twistMatrix.makeRotationY(fy * intensityY);
+		geometry.vertices[i].applyMatrix4(twistMatrix);
+		
+		twistMatrix.makeRotationZ(fz * intensityZ);
 		geometry.vertices[i].applyMatrix4(twistMatrix);
 	}
 	return geometry;
 }
 
 function taperGeometry(oldGeometry){
+	console.log("on taper")
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
-	var taperMatrix = new THREE.Matrix4();
+	var taperMatrixX = new THREE.Matrix4();
+	var taperMatrixY = new THREE.Matrix4();
+	var taperMatrixZ = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
-		var fz = f(geometry.vertices[i].z, controls.normie);
-		taperMatrix.set(fz,  0, 0, 0,
-						 0, fz, 0, 0,
-						 0,  0, 1, 0,
-						 0,  0, 0, 1);
-		geometry.vertices[i].applyMatrix4(taperMatrix);
+		if (controls.taperX){
+			console.log("X");
+			var fx = f(geometry.vertices[i].x, controls.normieX, maxx);
+			taperMatrixX.set(1,  0,  0, 0,
+							 0, fx,  0, 0,
+							 0,  0, fx, 0,
+							 0,  0,  0, 1);
+			geometry.vertices[i].applyMatrix4(taperMatrixX);
+		}
+
+		if (controls.taperY){
+			console.log("Y");
+			var fy = f(geometry.vertices[i].y, controls.normieY, maxy);
+			taperMatrixY.set(fy, 0,  0, 0,
+							  0, 1,  0, 0,
+							  0, 0, fy, 0,
+							  0, 0,  0, 1);
+			geometry.vertices[i].applyMatrix4(taperMatrixY);
+		}
+	
+		if (controls.taperZ){
+			console.log("Z");
+			var fz = f(geometry.vertices[i].z, controls.normieZ, maxz);
+			taperMatrixZ.set(fz,  0, 0, 0,
+							 0, fz, 0, 0,
+							 0,  0, 1, 0,
+							 0,  0, 0, 1);
+			geometry.vertices[i].applyMatrix4(taperMatrixZ);
+		}
 	}
 	return geometry;
 }
@@ -481,6 +579,6 @@ function shearGeometry(oldGeometry, a, b){
 	return geometry;
 }
 
-function f(z, point){
-	return (z - point) / (maxz - point) * Math.PI * 2;
+function f(axes, point, maxAxes){
+	return (axes - point) / (maxAxes - point) * Math.PI * 2;
 }
