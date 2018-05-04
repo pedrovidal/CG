@@ -23,11 +23,11 @@ var controls;
 function init(){
 	scene = new THREE.Scene();
 	renderer = new THREE.WebGLRenderer();
-	camera = new THREE.OrthographicCamera(-2.0, 2.0, 2.0, -2.0, -2.0, 2.0);
+	camera = new THREE.OrthographicCamera(-2.0, 2.0, 2.0, -2.0, -5000.0, 5000.0);
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
-	renderer.setSize(500, 500);
+	renderer.setSize(900, 900);
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -63,11 +63,12 @@ function init(){
 
 		// controles de deformacao
 		twist: false,
+		twistIntensity: 0,
 		taper: false,
+		normie: 0.0,
 		shear: false,
 		shearA: 0.0,
 		shearB: 0.0,
-		twistIntensity: 0,
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
@@ -90,6 +91,7 @@ function init(){
 			this.shear = false;
 			this.shearA = 0;
 			this.shearB = 0;
+			this.normie = 0;
 			reset();
 		} 
 
@@ -179,8 +181,16 @@ function init(){
 	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
 	taperOpt.onChange(reset);
 
+	var normieZopt = deformsGui.add(controls, 'normie', minz, maxz - 0.01).name('Altura do Z').listen();
+	normieZopt.onChange(reset);
+
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
-	shearOpt.onChange(reset);
+	shearOpt.onChange(function(){
+		if (!controls.shear){
+			controls.shearA = controls.shearB = 0; 
+		}
+		reset();
+	});
 
 	var shearAOpt = deformsGui.add(controls, 'shearA', -1, 1).name('A').listen();
 	shearAOpt.onChange(reset);
@@ -189,6 +199,7 @@ function init(){
 	shearBOpt.onChange(reset);
 
 	deformsGui.add(controls, 'iniForm').name('Return to initial form').listen();
+
 
 	deformsGui.open();
 
@@ -451,5 +462,5 @@ function shearGeometry(oldGeometry, a, b){
 }
 
 function f(z){
-	return (z - minz) / (maxz - minz) * Math.PI * 2;
+	return (z - controls.normie) / (maxz - controls.normie) * Math.PI * 2;
 }
