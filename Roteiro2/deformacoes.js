@@ -44,7 +44,7 @@ function init(){
 	// Rotaciona para poder visualizar gota "em pe"
 	dropGeometry.rotateX(-Math.PI / 2);
 
-	objectGeometry = dropGeometry;
+	objectGeometry = dropGeometry.clone();
 
 	objectMaterial = createMaterial(0xffffff, true);
 	objectMesh = new THREE.Mesh(objectGeometry, objectMaterial);
@@ -360,10 +360,10 @@ function reset(){
 
 	if (controls.drop){
 		// objectGeometry = createGeometry(Math.round(controls.numVertices));
-		objectGeometry = dropGeometry;
+		objectGeometry = dropGeometry.clone();
 	}
 	else if (controls.bunny){
-		objectGeometry = bunnyGeometry;
+		objectGeometry = bunnyGeometry.clone();
 	}
 
 	// // checa opcoes de cor
