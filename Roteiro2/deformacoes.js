@@ -40,10 +40,10 @@ function init(){
 	// Load Mesh
 	var loader = new THREE.OBJLoader();
 	loader.load('./bunnyPlastic.obj', loadMesh);
-
+	
 	// Inicializa geometria, material e mesh
 	dropGeometry = createGeometry(40);
-	dropGeometry = colorXYZBased(dropGeometry);
+	dropGeometry = colorXYZBased(dropGeometry, minx, maxx, miny, maxy, minz, maxz);
 	
 	// Rotaciona para poder visualizar gota "em pe"
 	dropGeometry.rotateX(-Math.PI / 2);
@@ -548,23 +548,23 @@ function clearScene(){
 }
 
 // colore faces com base nas posicoes x, y, e z dos vertices
-function colorXYZBased(geometry){
+function colorXYZBased(geometry, mx, Mx, my, My, mz, Mz){
 	for (i = 0; i < geometry.faces.length; i++){
-		var r1 = (geometry.vertices[geometry.faces[i].a].x - minx) / (maxx - minx);
-		var g1 = (geometry.vertices[geometry.faces[i].a].y - miny) / (maxy - miny);
-		var b1 = (geometry.vertices[geometry.faces[i].a].z - minz) / (maxz - minz);
+		var r1 = (geometry.vertices[geometry.faces[i].a].x - mx) / (Mx - mx);
+		var g1 = (geometry.vertices[geometry.faces[i].a].y - my) / (My - my);
+		var b1 = (geometry.vertices[geometry.faces[i].a].z - mz) / (Mz - mz);
 		var color1 = new THREE.Color(r1, g1, b1);
 		geometry.faces[i].vertexColors[0] = color1;
 
-		var r2 = (geometry.vertices[geometry.faces[i].b].x - minx) / (maxx - minx);
-		var g2 = (geometry.vertices[geometry.faces[i].b].y - miny) / (maxy - miny);
-		var b2 = (geometry.vertices[geometry.faces[i].b].z - minz) / (maxz - minz);
+		var r2 = (geometry.vertices[geometry.faces[i].b].x - mx) / (Mx - mx);
+		var g2 = (geometry.vertices[geometry.faces[i].b].y - my) / (My - my);
+		var b2 = (geometry.vertices[geometry.faces[i].b].z - mz) / (Mz - mz);
 		var color2 = new THREE.Color(r2, g2, b2);
 		geometry.faces[i].vertexColors[1] = color2;
 
-		var r3 = (geometry.vertices[geometry.faces[i].c].x - minx) / (maxx - minx);
-		var g3 = (geometry.vertices[geometry.faces[i].c].y - miny) / (maxy - miny);
-		var b3 = (geometry.vertices[geometry.faces[i].c].z - minz) / (maxz - minz);
+		var r3 = (geometry.vertices[geometry.faces[i].c].x - mx) / (Mx - mx);
+		var g3 = (geometry.vertices[geometry.faces[i].c].y - my) / (My - my);
+		var b3 = (geometry.vertices[geometry.faces[i].c].z - mz) / (Mz - mz);
 		var color3 = new THREE.Color(r3, g3, b3);
 		geometry.faces[i].vertexColors[2] = color3;
 	}
@@ -670,18 +670,18 @@ function loadMesh(loadedMesh) {
 		}
 	});
 
-	var minx = miny = minz = 500;
-	var maxx = maxy = maxz = -500;
+	var mx = my = mz = 500;
+	var Mx = My = Mz = -500;
 
 	for (i = 0; i < geometry.vertices.length; i++){
-		minx = Math.min(geometry.vertices[i].x, minx);
-		maxx = Math.max(geometry.vertices[i].x, maxx);
-		miny = Math.min(geometry.vertices[i].y, miny);
-		maxy = Math.max(geometry.vertices[i].y, maxy);
-		minz = Math.min(geometry.vertices[i].z, minz);
-		maxz = Math.max(geometry.vertices[i].z, maxz);
+		mx = Math.min(geometry.vertices[i].x, mx);
+		Mx = Math.max(geometry.vertices[i].x, Mx);
+		my = Math.min(geometry.vertices[i].y, my);
+		My = Math.max(geometry.vertices[i].y, My);
+		mz = Math.min(geometry.vertices[i].z, mz);
+		Mz = Math.max(geometry.vertices[i].z, Mz);
 	}
-	// console.log(minx, miny, minz, maxx, maxy, maxz);
+	// console.log(mx, my, mz, Mx, My, Mz);
 
-	bunnyGeometry = colorXYZBased(geometry);	
+	bunnyGeometry = colorXYZBased(geometry, mx, Mx, my, My, mz, Mz);	
 };
