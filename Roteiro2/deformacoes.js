@@ -3,9 +3,12 @@ var renderer;
 var camera;
 
 // geometria, material e mesh da gota
+var objectGeometry;
+var objectMaterial;
+var objectMesh;
+
+var bunnyGeometry = null;
 var dropGeometry;
-var dropMaterial
-var dropMesh;
 
 var flag = false;
 
@@ -36,34 +39,45 @@ function init(){
 
 	// Inicializa geometria, material e mesh
 	dropGeometry = createGeometry(40);
-	dropGeometry = colorCircleBased(dropGeometry);
-	dropMaterial = createMaterial(0xffffff, true);
-	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
-
+	dropGeometry = colorXYZBased(dropGeometry);
+	
 	// Rotaciona para poder visualizar gota "em pe"
-	dropMesh.rotation.x -= Math.PI / 2;
+	dropGeometry.rotateX(-Math.PI / 2);
 
-	scene.add(dropMesh);
+	objectGeometry = dropGeometry;
+
+	objectMaterial = createMaterial(0xffffff, true);
+	objectMesh = new THREE.Mesh(objectGeometry, objectMaterial);
+
+	scene.add(objectMesh);
+
+	// Load Mesh
+	if (bunnyGeometry == null){
+		var loader = new THREE.OBJLoader();
+		loader.load('./bunnyPlastic.obj', loadMesh);
+	}
 
 	// controles da gui
 	controls = {
-		numVertices: 40,
-		color: dropMaterial.color.getStyle(),
+		// numVertices: 40,
+		// color: objectMaterial.color.getStyle(),
 
-		// guarda cor atual da mesh
-		actualColor: 0x0000ff,
+		// // guarda cor atual da mesh
+		// actualColor: 0x0000ff,
 		
 		wireframe: true,
+		drop: true,
+		bunny: false,
 		
 		// guardam velocidade de rotacao da mesh
 		velx: 0.0,
 		vely: 0.0,
 		velz: 0.0,
 
-		// controles de opcao de cor
-		colorSolid:false,
-		colorXYZ: false,
-		colorCircle: true,
+		// // controles de opcao de cor
+		// colorSolid:false,
+		// colorXYZ: true,
+		// colorCircle: false,
 
 		// controles de deformacao
 		twist: false,
@@ -125,7 +139,7 @@ function init(){
 	// colorGui.addColor(controls, 'color').name('RGB Color').onChange(function (cor) {
 	// 	controls.actualColor = cor;
 	// 	if (controls.colorSolid){ // se padrao escolhido for cor solida
-	// 		dropMaterial.color.setStyle(cor); // troca para a cor escolhida
+	// 		objectMaterial.color.setStyle(cor); // troca para a cor escolhida
 	// 	}
  //    });
 
@@ -170,6 +184,19 @@ function init(){
 	wireframeOpt.onChange(reset);
 	// var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
 	// numVerticesOpt.onChange(reset);
+
+	// opcoes para alterar a malha (bunny ou drop)
+	var objectMeshOpt = meshGui.add(controls, 'drop').name('Drop Mesh').listen();
+	objectMeshOpt.onChange(function(){
+		controls.bunny = false;
+		reset();
+	});
+
+	var bunnyMeshOpt = meshGui.add(controls, 'bunny').name('Bunny Mesh').listen();
+	bunnyMeshOpt.onChange(function(){
+		controls.drop = false;
+		reset();
+	});
 
 	meshGui.open();
 
@@ -332,62 +359,68 @@ function init(){
 
 // funcao para recriar a gota caso algo mude
 function reset(){
-	
-	dropGeometry = createGeometry(Math.round(controls.numVertices));
-	
-	// checa opcoes de cor
-	if (controls.colorSolid){
-		dropMaterial = createMaterial(controls.actualColor, controls.wireframe);
+
+	if (controls.drop){
+		// objectGeometry = createGeometry(Math.round(controls.numVertices));
+		objectGeometry = dropGeometry;
 	}
-	else if (controls.colorXYZ){
-		dropGeometry = colorXYZBased(dropGeometry);
-		dropMaterial = createMaterial(0xffffff, controls.wireframe);
-	}
-	else{
-		dropGeometry = colorCircleBased(dropGeometry);
-		dropMaterial = createMaterial(0xffffff, controls.wireframe);
-		// DEBUG
-		// console.log('else', Math.trunc(controls.colorOption));
+	else if (controls.bunny){
+		objectGeometry = bunnyGeometry;
 	}
 
+	// // checa opcoes de cor
+	// if (controls.colorSolid){
+	// 	objectMaterial = createMaterial(controls.actualColor, controls.wireframe);
+	// }
+	// else if (controls.colorXYZ){
+	// 	objectGeometry = colorXYZBased(objectGeometry);
+	// 	objectMaterial = createMaterial(0xffffff, controls.wireframe);
+	// }
+	// else{
+	// 	objectGeometry = colorCircleBased(objectGeometry);
+	// 	objectMaterial = createMaterial(0xffffff, controls.wireframe);
+	// 	// DEBUG
+	// 	// console.log('else', Math.trunc(controls.colorOption));
+	// }
+
 	if (controls.twist){
-		dropGeometry = twistGeometry(dropGeometry, controls.twistIntensityX, controls.twistIntensityY, controls.twistIntensityZ);
+		objectGeometry = twistGeometry(objectGeometry, controls.twistIntensityX, controls.twistIntensityY, controls.twistIntensityZ);
 	}
 
 	if (controls.taper){
-		dropGeometry = taperGeometry(dropGeometry);
+		objectGeometry = taperGeometry(objectGeometry);
 	}
 
 	if (controls.shear){
-		dropGeometry = shearGeometry(dropGeometry);
+		objectGeometry = shearGeometry(objectGeometry);
 	}
 
 	// guardam rotacao da malha
-	var rotx = dropMesh.rotation.x, roty = dropMesh.rotation.y, rotz = dropMesh.rotation.z;
+	var rotx = objectMesh.rotation.x, roty = objectMesh.rotation.y, rotz = objectMesh.rotation.z;
 
 	//cria mesh
-	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
+	objectMesh = new THREE.Mesh(objectGeometry, objectMaterial);
 	
 	// tira mesh antiga da cena
-	clearScene(scene);
+	clearScene();
 
 	// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
 	// atributos sem atrapalhar animacao
-	if (flag){
-		// salva rotacao para que se outra malha precise ser criada
-		// seja colocada na mesma posicao
-		dropMesh.rotation.x = - Math.PI / 2;
-		dropMesh.rotation.y = 0;
-		dropMesh.rotation.z = 0;
-	}
-	else{
-		dropMesh.rotation.x = rotx;
-		dropMesh.rotation.y = roty;
-		dropMesh.rotation.z = rotz;
-	}
-	flag = false;
+	// if (flag){
+	// 	// salva rotacao para que se outra malha precise ser criada
+	// 	// seja colocada na mesma posicao
+	// 	objectMesh.rotation.x = - Math.PI / 2;
+	// 	objectMesh.rotation.y = 0;
+	// 	objectMesh.rotation.z = 0;
+	// }
+	// else{
+	// 	objectMesh.rotation.x = rotx;
+	// 	objectMesh.rotation.y = roty;
+	// 	objectMesh.rotation.z = rotz;
+	// }
+	// flag = false;
 
-	scene.add(dropMesh);
+	scene.add(objectMesh);
 	scene.add(camera);
 	
 	renderer.clear();
@@ -399,9 +432,9 @@ function animate() {
 	requestAnimationFrame(animate);
 
 	// rotaciona malha com base nas velocidades escolhidas
-	dropMesh.rotation.x += controls.velx;
-	dropMesh.rotation.y += controls.vely;
-	dropMesh.rotation.z += controls.velz;
+	objectMesh.rotation.x += controls.velx;
+	objectMesh.rotation.y += controls.vely;
+	objectMesh.rotation.z += controls.velz;
 	
 	renderer.clear();
 	renderer.render(scene, camera);
@@ -410,13 +443,13 @@ function animate() {
 function createMaterial(actualColor, wireframeStatus){
 	// DEBUG
 	// console.log(wireframeStatus);
-	var dropMaterial = new THREE.MeshBasicMaterial({
+	var objectMaterial = new THREE.MeshBasicMaterial({
 		color:actualColor,
 		vertexColors:THREE.FaceColors,
 		side:THREE.DoubleSide,
 		wireframe:wireframeStatus
 	})
-	return dropMaterial;
+	return objectMaterial;
 }
 
 function createGeometry(numVertices){
@@ -499,7 +532,7 @@ function createGeometry(numVertices){
 }
 
 // remove tudo da cena
-function clearScene(scene){
+function clearScene(){
 	while(scene.children.length > 0){ 
     	scene.remove(scene.children[0]); 
 	}
@@ -563,7 +596,6 @@ function twistGeometry(oldGeometry, intensityX, intensityY, intensityZ){
 }
 
 function taperGeometry(oldGeometry){
-	console.log("on taper")
 	var geometry = new THREE.Geometry();
 	geometry = oldGeometry;
 	var taperMatrixX = new THREE.Matrix4();
@@ -571,7 +603,6 @@ function taperGeometry(oldGeometry){
 	var taperMatrixZ = new THREE.Matrix4();
 	for (i = 0; i < geometry.vertices.length; i++){
 		if (controls.normieX != 0){
-			console.log("X");
 			var fx = f(geometry.vertices[i].x, controls.normieX, maxx);
 			taperMatrixX.set(1,  0,  0, 0,
 							 0, fx,  0, 0,
@@ -581,7 +612,6 @@ function taperGeometry(oldGeometry){
 		}
 
 		if (controls.normieY != 0){
-			console.log("Y");
 			var fy = f(geometry.vertices[i].y, controls.normieY, maxy);
 			taperMatrixY.set(fy, 0,  0, 0,
 							  0, 1,  0, 0,
@@ -591,7 +621,6 @@ function taperGeometry(oldGeometry){
 		}
 	
 		if (controls.normieZ != 0){
-			console.log("Z");
 			var fz = f(geometry.vertices[i].z, controls.normieZ, maxz);
 			taperMatrixZ.set(fz,  0, 0, 0,
 							 0, fz, 0, 0,
@@ -620,3 +649,51 @@ function shearGeometry(oldGeometry){
 function f(axes, point, maxAxes){
 	return (axes - point) / (maxAxes - point) * Math.PI * 2;
 }
+
+function loadMesh(loadedMesh) {
+	var material = new THREE.MeshBasicMaterial({color: 0xffffff, vertexColors:THREE.VertexColors, side:THREE.DoubleSide, wireframe:false});
+	var geometry;
+	loadedMesh.children.forEach(function (child) {
+
+		child.material = material;
+		if (child instanceof THREE.Mesh){
+			geometry = new THREE.Geometry().fromBufferGeometry(child.geometry);
+		}
+	});
+
+	var minx = miny = minz = 500;
+	var maxx = maxy = maxz = -500;
+
+	for (i = 0; i < geometry.vertices.length; i++){
+		minx = Math.min(geometry.vertices[i].x, minx);
+		maxx = Math.max(geometry.vertices[i].x, maxx);
+		miny = Math.min(geometry.vertices[i].y, miny);
+		maxy = Math.max(geometry.vertices[i].y, maxy);
+		minz = Math.min(geometry.vertices[i].z, minz);
+		maxz = Math.max(geometry.vertices[i].z, maxz);
+	}
+	// console.log(minx, miny, minz, maxx, maxy, maxz);
+
+	for (i = 0; i < geometry.faces.length; i++){
+		var r1 = (geometry.vertices[geometry.faces[i].a].x - minx) / (maxx - minx);
+		var g1 = (geometry.vertices[geometry.faces[i].a].y - miny) / (maxy - miny);
+		var b1 = (geometry.vertices[geometry.faces[i].a].z - minz) / (maxz - minz);
+		var color1 = new THREE.Color(r1, g1, b1);
+		geometry.faces[i].vertexColors[0] = color1;
+
+		var r2 = (geometry.vertices[geometry.faces[i].b].x - minx) / (maxx - minx);
+		var g2 = (geometry.vertices[geometry.faces[i].b].y - miny) / (maxy - miny);
+		var b2 = (geometry.vertices[geometry.faces[i].b].z - minz) / (maxz - minz);
+		var color2 = new THREE.Color(r2, g2, b2);
+		geometry.faces[i].vertexColors[1] = color2;
+
+		var r3 = (geometry.vertices[geometry.faces[i].c].x - minx) / (maxx - minx);
+		var g3 = (geometry.vertices[geometry.faces[i].c].y - miny) / (maxy - miny);
+		var b3 = (geometry.vertices[geometry.faces[i].c].z - minz) / (maxz - minz);
+		var color3 = new THREE.Color(r3, g3, b3);
+		geometry.faces[i].vertexColors[2] = color3;
+
+	}
+	
+	bunnyGeometry = geometry;
+};
