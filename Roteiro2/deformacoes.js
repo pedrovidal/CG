@@ -36,7 +36,8 @@ function init(){
 
 	// Inicializa geometria, material e mesh
 	dropGeometry = createGeometry(40);
-	dropMaterial = createMaterial(0x0000ff, true);
+	dropGeometry = colorCircleBased(dropGeometry);
+	dropMaterial = createMaterial(0xffffff, true);
 	dropMesh = new THREE.Mesh(dropGeometry, dropMaterial);
 
 	// Rotaciona para poder visualizar gota "em pe"
