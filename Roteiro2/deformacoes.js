@@ -37,12 +37,24 @@ function init(){
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
+	// Load Mesh
+	var loader = new THREE.OBJLoader();
+	loader.load('./bunnyPlastic.obj', loadMesh);
+
 	// Inicializa geometria, material e mesh
 	dropGeometry = createGeometry(40);
 	dropGeometry = colorXYZBased(dropGeometry);
 	
 	// Rotaciona para poder visualizar gota "em pe"
 	dropGeometry.rotateX(-Math.PI / 2);
+
+	var aux = miny;
+	miny = minz;
+	minz = aux;
+
+	aux = maxy;
+	maxy =maxz;
+	maxz = aux;
 
 	objectGeometry = dropGeometry.clone();
 
@@ -51,9 +63,6 @@ function init(){
 
 	scene.add(objectMesh);
 
-	// Load Mesh
-	var loader = new THREE.OBJLoader();
-	loader.load('./bunnyPlastic.obj', loadMesh);
 
 	// controles da gui
 	controls = {
