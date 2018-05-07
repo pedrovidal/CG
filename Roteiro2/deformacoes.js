@@ -242,21 +242,21 @@ function init(){
 		reset();
 	});
 
-	var twistIntensityXOpt = deformsGui.add(controls, 'twistIntensityX', -10, 10).name('Intensidade do Twist em X').listen();
+	var twistIntensityXOpt = deformsGui.add(controls, 'twistIntensityX', -10, 10).step(0.1).name('Intensidade do Twist em X').listen();
 	twistIntensityXOpt.onFinishChange(function(){
 		controls.twistIntensityY = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
-	var twistIntensityYOpt = deformsGui.add(controls, 'twistIntensityY', -10, 10).name('Intensidade do Twist em Y').listen();
+	var twistIntensityYOpt = deformsGui.add(controls, 'twistIntensityY', -10, 10).step(0.1).name('Intensidade do Twist em Y').listen();
 	twistIntensityYOpt.onFinishChange(function(){
 		controls.twistIntensityX = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
-	var twistIntensityZOpt = deformsGui.add(controls, 'twistIntensityZ', -10, 10).name('Intensidade do Twist em Z').listen();
+	var twistIntensityZOpt = deformsGui.add(controls, 'twistIntensityZ', -10, 10).step(0.1).name('Intensidade do Twist em Z').listen();
 	twistIntensityZOpt.onFinishChange(function(){
 		controls.twistIntensityX = controls.twistIntensityY = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
@@ -286,19 +286,19 @@ function init(){
 		reset();
 	});
 
-	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).name('Em X').listen();
+	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).step(0.01).name('Em X').listen();
 	normieXopt.onFinishChange(function(){
 		controls.normieY = controls.normieZ = 0;
 		reset();
 	});
 
-	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).name('Em Y').listen();
+	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).step(0.01).name('Em Y').listen();
 	normieYopt.onFinishChange(function(){
 		controls.normieX = controls.normieZ = 0;
 		reset();
 	});
 
-	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).name('Em Z').listen();
+	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).step(0.01).name('Em Z').listen();
 	normieZopt.onFinishChange(function(){
 		controls.normieX = controls.normieY = 0;
 		reset();
@@ -322,7 +322,7 @@ function init(){
 		reset();
 	});
 
-	var shearXYOpt = deformsGui.add(controls, 'Sxy', -1, 1).name('Shear de X em Y').listen();
+	var shearXYOpt = deformsGui.add(controls, 'Sxy', -1, 1).step(0.01).name('Shear de X em Y').listen();
 	shearXYOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
@@ -330,7 +330,7 @@ function init(){
 	});
 
 
-	var shearXzOpt = deformsGui.add(controls, 'Sxz', -1, 1).name('Shear de X em Z').listen();
+	var shearXzOpt = deformsGui.add(controls, 'Sxz', -1, 1).step(0.01).name('Shear de X em Z').listen();
 	shearXzOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
@@ -338,7 +338,7 @@ function init(){
 	});
 
 
-	var shearYXOpt = deformsGui.add(controls, 'Syx', -1, 1).name('Shear de Y em X').listen();
+	var shearYXOpt = deformsGui.add(controls, 'Syx', -1, 1).step(0.01).name('Shear de Y em X').listen();
 	shearYXOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
@@ -346,7 +346,7 @@ function init(){
 	});
 
 
-	var shearYZOpt = deformsGui.add(controls, 'Syz', -1, 1).name('Shear de Y em Z').listen();
+	var shearYZOpt = deformsGui.add(controls, 'Syz', -1, 1).step(0.01).name('Shear de Y em Z').listen();
 	shearYZOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
@@ -354,7 +354,7 @@ function init(){
 	});
 
 
-	var shearZXOpt = deformsGui.add(controls, 'Szx', -1, 1).name('Shear de Z em X').listen();
+	var shearZXOpt = deformsGui.add(controls, 'Szx', -1, 1).step(0.01).name('Shear de Z em X').listen();
 	shearZXOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
@@ -362,7 +362,7 @@ function init(){
 	});
 
 
-	var shearZYOpt = deformsGui.add(controls, 'Szy', -1, 1).name('Shear de Z em Y').listen();
+	var shearZYOpt = deformsGui.add(controls, 'Szy', -1, 1).step(0.01).name('Shear de Z em Y').listen();
 	shearZYOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
