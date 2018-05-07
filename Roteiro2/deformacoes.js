@@ -29,11 +29,11 @@ var controls;
 function init(){
 	scene = new THREE.Scene();
 	renderer = new THREE.WebGLRenderer();
-	camera = new THREE.OrthographicCamera(-2.5, 2.5, 2.5, -2.5, -5000.0, 5000.0);
+	camera = new THREE.OrthographicCamera(-2, 2, 2, -2, -5000.0, 5000.0);
 	scene.add(camera);
 
 	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
-	renderer.setSize(900, 900);
+	renderer.setSize(500, 500);
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -58,7 +58,7 @@ function init(){
 
 	objectGeometry = dropGeometry.clone();
 
-	objectMaterial = createMaterial(0xffffff, true);
+	objectMaterial = createMaterial(0xffffff, false);
 	objectMesh = new THREE.Mesh(objectGeometry, objectMaterial);
 
 	scene.add(objectMesh);
@@ -72,7 +72,7 @@ function init(){
 		// // guarda cor atual da mesh
 		// actualColor: 0x0000ff,
 		
-		wireframe: true,
+		wireframe: false,
 		drop: true,
 		bunny: false,
 		
