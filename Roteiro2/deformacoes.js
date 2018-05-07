@@ -10,7 +10,7 @@ var objectMesh;
 var bunnyGeometry;
 var dropGeometry;
 
-var flag = false;
+var iniPosFlag = false;
 
 var minx = 5000;
 var maxx = -5000;
@@ -53,7 +53,7 @@ function init(){
 	minz = aux;
 
 	aux = maxy;
-	maxy =maxz;
+	maxy = maxz;
 	maxz = aux;
 
 	objectGeometry = dropGeometry.clone();
@@ -91,10 +91,12 @@ function init(){
 		twistIntensityX: 0,
 		twistIntensityY: 0,
 		twistIntensityZ: 0,
+
 		taper: false,
 		normieX: 0.0,
 		normieY: 0.0,
 		normieZ: 0.0,
+		
 		shear: false,
 		Sxy: 0.0,
 		Sxz: 0.0,
@@ -105,10 +107,10 @@ function init(){
 
 		// para rotacao e volta para posicao inicial da mesh
 		iniPos: function(){
-			flag = true;
-			this.velx = 0.0000;
-			this.vely = 0.0000;
-			this.velz = 0.0000;
+			iniPosFlag = true;
+			this.velx = 0;
+			this.vely = 0;
+			this.velz = 0;
 			reset();
 		},
 
@@ -120,7 +122,9 @@ function init(){
 			this.twistIntensityZ = 0;
 
 			this.taper = false;
-			this.normie = 0;
+			this.normieX = 0;
+			this.normieY = 0;
+			this.normieZ = 0;
 
 			this.shear = false;
 			this.Sxy = 0.0;
@@ -143,7 +147,7 @@ function init(){
 	// var colorGui = gui.addFolder('Color');
 	
 	// // painel de escolha de cor
-	// colorGui.addColor(controls, 'color').name('RGB Color').onChange(function (cor) {
+	// colorGui.addColor(controls, 'color').name('RGB Color').onFinishChange(function (cor) {
 	// 	controls.actualColor = cor;
 	// 	if (controls.colorSolid){ // se padrao escolhido for cor solida
 	// 		objectMaterial.color.setStyle(cor); // troca para a cor escolhida
@@ -151,7 +155,7 @@ function init(){
  //    });
 
  //    var colorSolidOpt = colorGui.add(controls, 'colorSolid').name('Solid color').listen();
- //    colorSolidOpt.onChange(function(){
+ //    colorSolidOpt.onFinishChange(function(){
  //    	if (controls.colorSolid){
  //    		controls.colorXYZ = controls.colorCircle = false;
  //    	}
@@ -162,7 +166,7 @@ function init(){
  //    });
     
  //    var colorXYZOpt = colorGui.add(controls, 'colorXYZ').name('Color based on XYZ').listen();
- //    colorXYZOpt.onChange(function(){
+ //    colorXYZOpt.onFinishChange(function(){
  //    	if (controls.colorXYZ){
  //    		controls.colorSolid = controls.colorCircle = false;
  //    	}
@@ -173,7 +177,7 @@ function init(){
  //    });
     
  //    var colorCircleOpt = colorGui.add(controls, 'colorCircle').name('Color based on spherical coordinates').listen();
- //    colorCircleOpt.onChange(function(){
+ //    colorCircleOpt.onFinishChange(function(){
  //    	if (controls.colorCircle){
  //    		controls.colorXYZ = controls.colorSolid = false;
  //    	}
@@ -188,20 +192,30 @@ function init(){
 	// opcoes de mesh (numero de vertices e wireframe)
 	var meshGui = gui.addFolder('Mesh');
 	var wireframeOpt = meshGui.add(controls, 'wireframe').name('Wireframe').listen();
-	wireframeOpt.onChange(reset);
+	wireframeOpt.onFinishChange(reset);
 	// var numVerticesOpt = meshGui.add(controls, 'numVertices', 3, 80).name('Number of Vertices').listen();
-	// numVerticesOpt.onChange(reset);
+	// numVerticesOpt.onFinishChange(reset);
 
 	// opcoes para alterar a malha (bunny ou drop)
-	var objectMeshOpt = meshGui.add(controls, 'drop').name('Drop Mesh').listen();
-	objectMeshOpt.onChange(function(){
-		controls.bunny = false;
+	var dropMeshOpt = meshGui.add(controls, 'drop').name('Drop Mesh').listen();
+	dropMeshOpt.onFinishChange(function(){
+		if (!controls.drop){
+			controls.drop = true;
+		}
+		else{
+			controls.bunny = false;
+		}
 		reset();
 	});
 
 	var bunnyMeshOpt = meshGui.add(controls, 'bunny').name('Bunny Mesh').listen();
-	bunnyMeshOpt.onChange(function(){
-		controls.drop = false;
+	bunnyMeshOpt.onFinishChange(function(){
+		if (!controls.bunny){
+			controls.bunny = true;
+		}
+		else{
+			controls.drop = false;
+		}
 		reset();
 	});
 
@@ -211,36 +225,39 @@ function init(){
 	var deformsGui = gui.addFolder("Deformacoes");	
 	
 	var twistOpt = deformsGui.add(controls, 'twist').name('Twist').listen();
-	twistOpt.onChange(function (cor) {
+	twistOpt.onFinishChange(function (cor) {
 		
 		// so permite uma deformacao por vez
-		controls.taper = controls.shear = false;
-		controls.normieX = controls.normieY = controls.normieZ = 0;
-		controls.Sxy = controls.Sxz = 0;
-		controls.Syx = controls.Syz = 0;
-		controls.Szx = controls.Szy = 0;
-		if (!controls.twist){ // se desmarcar opcao de twist
+		if (controls.twist){
+			controls.taper = controls.shear = false;
+			controls.normieX = controls.normieY = controls.normieZ = 0;
+			controls.Sxy = controls.Sxz = 0;
+			controls.Syx = controls.Syz = 0;
+			controls.Szx = controls.Szy = 0;
+		}
+		// se desmarcar opcao de twist
+		else{
 			controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0; // retorna intensidade para 0
 		}
 		reset();
 	});
 
 	var twistIntensityXOpt = deformsGui.add(controls, 'twistIntensityX', -10, 10).name('Intensidade do Twist em X').listen();
-	twistIntensityXOpt.onChange(function(){
+	twistIntensityXOpt.onFinishChange(function(){
 		controls.twistIntensityY = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
 	var twistIntensityYOpt = deformsGui.add(controls, 'twistIntensityY', -10, 10).name('Intensidade do Twist em Y').listen();
-	twistIntensityYOpt.onChange(function(){
+	twistIntensityYOpt.onFinishChange(function(){
 		controls.twistIntensityX = controls.twistIntensityZ = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
 		}
 	});
 	var twistIntensityZOpt = deformsGui.add(controls, 'twistIntensityZ', -10, 10).name('Intensidade do Twist em Z').listen();
-	twistIntensityZOpt.onChange(function(){
+	twistIntensityZOpt.onFinishChange(function(){
 		controls.twistIntensityX = controls.twistIntensityY = 0;
 		if (controls.twist){ // se opcao estiver marcada, torce a mesh com base na intensidade
 			reset();
@@ -253,45 +270,50 @@ function init(){
 	// });
 
 	var taperOpt = deformsGui.add(controls, 'taper').name('Taper').listen();
-	taperOpt.onChange(function(){
+	taperOpt.onFinishChange(function(){
 
 		// so permite uma deformacao por vez
-		controls.twist = controls.shear = false;
-		controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
-		controls.Sxy = controls.Sxz = 0;
-		controls.Syx = controls.Syz = 0;
-		controls.Szx = controls.Szy = 0;
-
+		if (controls.taper){
+			controls.twist = controls.shear = false;
+			controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
+			controls.Sxy = controls.Sxz = 0;
+			controls.Syx = controls.Syz = 0;
+			controls.Szx = controls.Szy = 0;
+		}
+		else{
+			controls.normieX = controls.normieY = controls.normieZ = 0;
+		}
 		reset();
 	});
 
 	var normieXopt = deformsGui.add(controls, 'normieX', minx, maxx - 0.01).name('Em X').listen();
-	normieXopt.onChange(function(){
+	normieXopt.onFinishChange(function(){
 		controls.normieY = controls.normieZ = 0;
 		reset();
 	});
 
 	var normieYopt = deformsGui.add(controls, 'normieY', miny, maxy - 0.01).name('Em Y').listen();
-	normieYopt.onChange(function(){
+	normieYopt.onFinishChange(function(){
 		controls.normieX = controls.normieZ = 0;
 		reset();
 	});
 
 	var normieZopt = deformsGui.add(controls, 'normieZ', minz, maxz - 0.01).name('Em Z').listen();
-	normieZopt.onChange(function(){
+	normieZopt.onFinishChange(function(){
 		controls.normieX = controls.normieY = 0;
 		reset();
 	});
 
 	var shearOpt = deformsGui.add(controls, 'shear').name('Shear').listen();
-	shearOpt.onChange(function(){
+	shearOpt.onFinishChange(function(){
 		
 		// so permite uma deformacao por vez
-		controls.twist = controls.taper = false;
-		controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
-		controls.normieX = controls.normieY = controls.normieZ = 0;
-		
-		if (!controls.shear){
+		if (controls.shear){
+			controls.twist = controls.taper = false;
+			controls.twistIntensityX = controls.twistIntensityY = controls.twistIntensityZ = 0;
+			controls.normieX = controls.normieY = controls.normieZ = 0;
+		}
+		else{
 			controls.Sxy = controls.Sxz = 0;
 			controls.Syx = controls.Syz = 0;
 			controls.Szx = controls.Szy = 0;
@@ -301,7 +323,7 @@ function init(){
 	});
 
 	var shearXYOpt = deformsGui.add(controls, 'Sxy', -1, 1).name('Shear de X em Y').listen();
-	shearXYOpt.onChange(function(){
+	shearXYOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -309,7 +331,7 @@ function init(){
 
 
 	var shearXzOpt = deformsGui.add(controls, 'Sxz', -1, 1).name('Shear de X em Z').listen();
-	shearXzOpt.onChange(function(){
+	shearXzOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -317,7 +339,7 @@ function init(){
 
 
 	var shearYXOpt = deformsGui.add(controls, 'Syx', -1, 1).name('Shear de Y em X').listen();
-	shearYXOpt.onChange(function(){
+	shearYXOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -325,7 +347,7 @@ function init(){
 
 
 	var shearYZOpt = deformsGui.add(controls, 'Syz', -1, 1).name('Shear de Y em Z').listen();
-	shearYZOpt.onChange(function(){
+	shearYZOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -333,7 +355,7 @@ function init(){
 
 
 	var shearZXOpt = deformsGui.add(controls, 'Szx', -1, 1).name('Shear de Z em X').listen();
-	shearZXOpt.onChange(function(){
+	shearZXOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -341,7 +363,7 @@ function init(){
 
 
 	var shearZYOpt = deformsGui.add(controls, 'Szy', -1, 1).name('Shear de Z em Y').listen();
-	shearZYOpt.onChange(function(){
+	shearZYOpt.onFinishChange(function(){
 		if (controls.shear){
 			reset();
 		}
@@ -354,9 +376,9 @@ function init(){
 
 	// opcoes de velocidade de rotacao
 	var rotationGui = gui.addFolder('Rotation Speed');
-	rotationGui.add(controls, 'velx', -0.0001, 0.0001).name('X').listen();
-	rotationGui.add(controls, 'vely', -0.0001, 0.0001).name('Y').listen();
-	rotationGui.add(controls, 'velz', -0.0001, 0.0001).name('Z').listen();
+	rotationGui.add(controls, 'velx', -0.001, 0.001).name('X').listen();
+	rotationGui.add(controls, 'vely', -0.001, 0.001).name('Y').listen();
+	rotationGui.add(controls, 'velz', -0.001, 0.001).name('Z').listen();
 	rotationGui.add(controls, 'iniPos').name('Return to initial position').listen();
 	//rotationGui.add(controls, 'debug').listen();
 	rotationGui.open()
@@ -403,7 +425,7 @@ function reset(){
 	}
 
 	// guardam rotacao da malha
-	// var rotx = objectMesh.rotation.x, roty = objectMesh.rotation.y, rotz = objectMesh.rotation.z;
+	var rotx = objectMesh.rotation.x, roty = objectMesh.rotation.y, rotz = objectMesh.rotation.z;
 
 	objectMaterial = createMaterial(0xffffff, controls.wireframe);
 	
@@ -415,19 +437,17 @@ function reset(){
 
 	// rotaciona a nova mesh com base nos valores de rotacao da mesh antiga, para que possa rotacionar e mudar
 	// atributos sem atrapalhar animacao
-	// if (flag){
-	// 	// salva rotacao para que se outra malha precise ser criada
-	// 	// seja colocada na mesma posicao
-	// 	objectMesh.rotation.x = - Math.PI / 2;
-	// 	objectMesh.rotation.y = 0;
-	// 	objectMesh.rotation.z = 0;
-	// }
-	// else{
-	// 	objectMesh.rotation.x = rotx;
-	// 	objectMesh.rotation.y = roty;
-	// 	objectMesh.rotation.z = rotz;
-	// }
-	// flag = false;
+	if (iniPosFlag){
+		objectMesh.rotation.x = 0;
+		objectMesh.rotation.y = 0;
+		objectMesh.rotation.z = 0;
+	} 
+	else{
+		objectMesh.rotation.x = rotx;
+		objectMesh.rotation.y = roty;
+		objectMesh.rotation.z = rotz;
+	}
+	iniPosFlag = false;
 
 	scene.add(objectMesh);
 	scene.add(camera);
@@ -453,7 +473,7 @@ function createMaterial(actualColor, wireframeStatus){
 	// DEBUG
 	// console.log(wireframeStatus);
 	var objectMaterial = new THREE.MeshBasicMaterial({
-		color:actualColor,
+		// color:actualColor,
 		vertexColors:THREE.FaceColors,
 		side:THREE.DoubleSide,
 		wireframe:wireframeStatus
