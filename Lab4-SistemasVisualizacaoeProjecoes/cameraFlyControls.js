@@ -26,11 +26,8 @@ function init() {
 	var loader = new THREE.OBJLoader();
 	loader.load('./city.obj', loadMesh);
 		
-	controls = new THREE.FirstPersonControls( camera );
-	controls.lookSpeed = 0.1;
-	controls.movementSpeed = 100;
-	controls.target = new THREE.Vector3(0,0,0);
-	clock = new THREE.Clock( true );
+	orbitControls = new THREE.FlyControls(camera/*, renderer.domElement*/);
+	orbitControls.autoRotate = true;
 
 	renderer.clear();
 	render();
@@ -42,7 +39,7 @@ function render() {
 	// var obj = scene.getObjectByName("myObj");
 	// obj.rotateX(angleX);
 	
-	controls.update(clock.getDelta());
+	orbitControls.update(0.5);
 	renderer.render(scene, camera);
 	requestAnimationFrame(render);
 }
@@ -67,11 +64,7 @@ function loadMesh(loadedMesh) {
 	
 	camera.position.set(box.max.x, box.max.y, box.max.z);
 	camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
-	// controls.lat = 0;
-	// controls.lon = 0;
-	// controls.phi = 0;
-	// controls.theta = 0;
-	// controls.target = loadedMesh.position;
+	orbitControls.update(0.5);
 	
 	//Add point light Source
 	var pointLight1 = new THREE.PointLight(new THREE.Color(1.0, 1.0, 1.0));
