@@ -10,6 +10,7 @@ var year		= 0.0;
 var month		= 0.0;
 var groupEarth 	= new THREE.Object3D();
 var groupSun 	= new THREE.Object3D();
+var groupMoon 	= new THREE.Object3D();
 var sunMatrix = new THREE.Matrix4();
 var earthMatrix = new THREE.Matrix4();
 var moonMatrix = new THREE.Matrix4();
@@ -39,7 +40,7 @@ function init() {
 	// Sol
 	var sunGeometry = new THREE.Geometry();
 	sunGeometry.copy(sphereGeometry);
-	var sunMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, wireframe:true} );
+	var sunMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, wireframe:false} );
 	sunGeometry.scale(0.4, 0.4, 0.4);
 	sun = new THREE.Mesh( sunGeometry, sunMaterial );
 	sun.add(sAxis);
@@ -55,7 +56,7 @@ function init() {
 	
 	var earthGeometry = new THREE.Geometry();
 	earthGeometry.copy(sphereGeometry);
-	var earthMaterial = new THREE.MeshBasicMaterial( {color: 0x0000ff, wireframe:true} );
+	var earthMaterial = new THREE.MeshPhongMaterial( {color: 0x0000ff, wireframe:false} );
 	earthGeometry.scale(0.1, 0.1, 0.1);
 	earth = new THREE.Mesh( earthGeometry, earthMaterial );
 	earth.add(tAxis);
@@ -70,7 +71,7 @@ function init() {
 	var moonGeometry = new THREE.Geometry();
 	moonGeometry.copy(sphereGeometry);
 	moonGeometry.scale(0.03, 0.03, 0.03);
-	var moonMaterial = new THREE.MeshBasicMaterial( {color: 0xaaaaaa, wireframe:true} );
+	var moonMaterial = new THREE.MeshPhongMaterial( {color: 0xaaaaaa, wireframe:false} );
 	moon = new THREE.Mesh( moonGeometry, moonMaterial );
 	moon.add(lAxis);
 	moon.position.set(0.55, 0.0, 0.0);
@@ -84,12 +85,16 @@ function init() {
 	var marsGeometry = new THREE.Geometry();
 	marsGeometry.copy(sphereGeometry);
 	marsGeometry.scale(0.2, 0.2, 0.2);
-	var marsMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000, wireframe:true} );
+	var marsMaterial = new THREE.MeshPhongMaterial( {color: 0xff0000, wireframe:false} );
 	mars = new THREE.Mesh( marsGeometry, marsMaterial );
 	mars.add(marsAxis);
 	mars.position.set(1.5, 0.0, 0.0);
 	scene.add( mars );	
 	
+	var moonLight = new THREE.PointLight(new THREE.Color(1.0, 1.0, 1.0), 2, 2);
+	moonLight.position.set(0.565, 0.0, 0.0);
+
+	groupEarth.add(moonLight);
 	groupEarth.add(earth);
 	groupEarth.add(moon);
 	scene.add(groupEarth);
@@ -98,6 +103,13 @@ function init() {
 	groupSun.add(mars);
 	groupSun.add(groupEarth);
 	scene.add(groupSun);
+
+	//Add point light Source
+	var sunLight = new THREE.PointLight(new THREE.Color(1.0, 1.0, 1.0), 2, 2);
+	// sunLight.distance = 0.0;
+	sunLight.position.set(0, 0, 0);
+	// sunLight.position.set(0, 70, 0);
+	scene.add(sunLight);
 
 		
 	renderer.clear();
