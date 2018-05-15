@@ -87,7 +87,7 @@ function loadMesh(loadedMesh) {
 	box = new THREE.Box3();
 	box.expandByObject(mesh);
 	
-	cameraPerspective.position.set(box.max.x, box.max.y, box.max.z);
+	cameraPerspective.position.set(box.max.x, box.max.y / 2, box.max.z);
 	cameraPerspective.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
 	orbitControlsPerspective.update();
 	
