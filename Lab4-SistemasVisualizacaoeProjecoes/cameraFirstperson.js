@@ -18,7 +18,7 @@ function init() {
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-	camera = new THREE.PerspectiveCamera( 100.0, aspectRatio, 0.1, 10000.0 );
+	camera = new THREE.PerspectiveCamera( 45.0, aspectRatio, 0.1, 10000.0 );
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
 	scene.add( camera );
 	
@@ -65,10 +65,17 @@ function loadMesh(loadedMesh) {
 	box = new THREE.Box3();
 	box.expandByObject(mesh);
 	
-	camera.position.set(box.max.x, box.max.y, box.max.z);
-	camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
-	// controls.lat = 0;
-	// controls.lon = 0;
+	controls.lookVertical = true;
+	controls.constrainVertical = true;
+	controls.verticalMin = 1.7;
+	controls.verticalMax = 2.0;
+	controls.lon = -140;
+	controls.lat = 0;
+	camera.position.set(box.max.x + 70, box.max.y + 70, box.max.z + 70);
+	camera.lookAt(mesh.position);
+	// controls.position.x = box.max.x;
+	// controls.position.y = box.max.y;
+	// controls.position.z = box.max.z;
 	// controls.phi = 0;
 	// controls.theta = 0;
 	// controls.target = loadedMesh.position;
