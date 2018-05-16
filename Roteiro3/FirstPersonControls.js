@@ -209,7 +209,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-		this.object.position.y = 1.8;
+		this.object.position.y = 1.7; //altura visao camera
 
 		// if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
 		// if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
