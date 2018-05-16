@@ -64,15 +64,18 @@ function render() {
 
 	var left = 0;
 	var top = 0;
-	var width = window.innerWidth * 0.45;
-	var height = window.innerHeight;
+	var width = window.innerWidth * 0.9;
+	var height = window.innerHeight * 0.9;
 
 	renderer.setViewport(left, top, width, height);
 	renderer.setScissor(left, top, width, height);
 	renderer.setScissorTest(true);    
 	renderer.render(scene, cameraAvatar);
-
-	left = window.innerWidth * 0.45
+	
+	left = window.innerWidth * 0.74;
+	top = 0;
+	height = window.innerHeight * 0.9 - window.innerHeight * 0.6;
+	width = height;
 
 	renderer.setViewport(left, top, width, height);
  	renderer.setScissor(left, top, width, height);
