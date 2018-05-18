@@ -75,10 +75,9 @@ function render() {
 	renderer.setScissorTest(true);    
 	renderer.render(scene, cameraAvatar);
 	
-	left = window.innerWidth * 0.74;
-	top = 0;
+	left = window.innerWidth * 0.7515;
 	height = window.innerHeight * 0.9 - window.innerHeight * 0.6;
-	width = height;
+	width = height; // para q MiniMapa seja um quadrado
 
 	renderer.setViewport(left, top, width, height);
  	renderer.setScissor(left, top, width, height);
