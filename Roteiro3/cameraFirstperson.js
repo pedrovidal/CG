@@ -31,6 +31,7 @@ function init() {
 	controlsAvatar = new THREE.FirstPersonControls( cameraAvatar );
 	controlsAvatar.lookSpeed = 0.07;
 	controlsAvatar.movementSpeed = 5;
+	controlsAvatar.originalMovementSpeed = 5;
 	controlsAvatar.target = new THREE.Vector3(0,0,0);
 	clock = new THREE.Clock( true );
 
@@ -114,8 +115,8 @@ function loadMesh(loadedMesh) {
 	cameraAvatar.position.set(5, 1.7, 15); // y = altura visao camera avatar
 	cameraAvatar.lookAt(mesh.position);
 
-	cameraMiniMap.position.set(5, box.max.y, 15);
-	cameraMiniMap.lookAt(5, 1.7, 17);
+	cameraMiniMap.position.set(5, box.max.y * 1.1, 15);
+	cameraMiniMap.lookAt(cameraAvatar.position);
 	cameraMiniMap.rotation.z = Math.PI / 2;
 
 	//Add point light Source
