@@ -19,7 +19,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.lookVertical = true;
 	this.autoForward = false;
 
-	this.activeLook = true;
+	this.activeLook = false;
 
 	this.heightSpeed = false;
 	this.heightCoef = 1.0;
@@ -85,16 +85,17 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.preventDefault();
 		event.stopPropagation();
 
-		if ( this.activeLook ) {
+		// if ( this.activeLook ) {
 
 			switch ( event.button ) {
 
-				case 0: this.moveForward = true; break;
-				case 2: this.moveBackward = true; break;
+				case 0: console.log('down'); this.activeLook = true; break;
+				// case 0: this.moveForward = true; break;
+				// case 2: this.moveBackward = true; break;
 
 			}
 
-		}
+		// }
 
 		this.mouseDragOn = true;
 
@@ -105,16 +106,17 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.preventDefault();
 		event.stopPropagation();
 
-		if ( this.activeLook ) {
+		// if ( this.activeLook ) {
 
 			switch ( event.button ) {
 
-				case 0: this.moveForward = false; break;
-				case 2: this.moveBackward = false; break;
+				case 0: this.activeLook = false; break;
+				// case 0: this.moveForward = false; break;
+				// case 2: this.moveBackward = false; break;
 
 			}
 
-		}
+		// }
 
 		this.mouseDragOn = false;
 
@@ -157,6 +159,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case 82: /*R*/ this.moveUp = true; break;
 			case 70: /*F*/ this.moveDown = true; break;
 
+			// case 76: /*L*/ this.activeLook = true; break;
+
 		}
 
 	};
@@ -180,6 +184,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case 82: /*R*/ this.moveUp = false; break;
 			case 70: /*F*/ this.moveDown = false; break;
 
+			// case 76: /*L*/ this.activeLook = false; break;
 		}
 
 	};

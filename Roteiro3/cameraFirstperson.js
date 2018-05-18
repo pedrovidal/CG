@@ -57,6 +57,9 @@ function render() {
 
 	cameraMiniMap.rotation = cameraAvatar.rotation;
 
+	cameraAvatar.updateProjectionMatrix();
+	cameraMiniMap.updateProjectionMatrix();
+
 	scene.remove(circle);
 	circle.position.x = cameraAvatar.position.x;
 	circle.position.z = cameraAvatar.position.z;
