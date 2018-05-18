@@ -2,6 +2,7 @@ var scene 				= null;
 var renderer			= null;
 var cameraAvatar 		= null;
 var cameraMiniMap 		= null;
+var cameraRearview 		= null;
 var box 				= null;
 
 function init() {
@@ -17,15 +18,18 @@ function init() {
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 	avatarGeometry = new THREE.CircleGeometry( 2, 32);
-	avatarMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+	avatarMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.FrontSide } );
 	avatar = new THREE.Mesh( avatarGeometry, avatarMaterial );
 	avatar.rotation.x -= Math.PI / 2;
 
 	scene.add( avatar );
 	
+	cameraRearview = new THREE.PerspectiveCamera( 45.0, aspectRatio, 0.1, 10000.0 );
+	// cameraRearview.lookAt(new THREE.Vector3(0, 0, 0));
+	scene.add( cameraRearview );
 
 	cameraAvatar = new THREE.PerspectiveCamera( 45.0, aspectRatio, 0.1, 10000.0 );
-	cameraAvatar.lookAt(new THREE.Vector3(0, 0, 0));
+	// cameraAvatar.lookAt(new THREE.Vector3(0, 0, 0));
 	scene.add( cameraAvatar );
 
 	controlsAvatar = new THREE.FirstPersonControls( cameraAvatar );
@@ -55,6 +59,7 @@ function render() {
 	cameraMiniMap.position.x = cameraAvatar.position.x;
 	cameraMiniMap.position.z = cameraAvatar.position.z;
 
+
 	cameraMiniMap.rotation = cameraAvatar.rotation;
 
 	cameraAvatar.updateProjectionMatrix();
@@ -64,6 +69,14 @@ function render() {
 	avatar.position.x = cameraAvatar.position.x;
 	avatar.position.z = cameraAvatar.position.z;
 	scene.add(avatar);
+
+
+	cameraRearview.position.x = cameraAvatar.position.x;
+	cameraRearview.position.z = cameraAvatar.position.z;
+
+	cameraRearview = cameraAvatar.clone();
+	cameraRearview.rotateY(-Math.PI);
+	cameraRearview.updateProjectionMatrix();
 
 	var left = 0;
 	var top = 0;
@@ -83,6 +96,15 @@ function render() {
  	renderer.setScissor(left, top, width, height);
 	renderer.setScissorTest(true);  
 	renderer.render(scene, cameraMiniMap);
+
+	left = 0;
+	height = window.innerHeight * 0.9 - window.innerHeight * 0.6;
+	width = height; // para q MiniMapa seja um quadrado
+
+	renderer.setViewport(left, top, width, height);
+ 	renderer.setScissor(left, top, width, height);
+	renderer.setScissorTest(true);  
+	renderer.render(scene, cameraRearview);
 
 	requestAnimationFrame(render);
 }
@@ -118,6 +140,10 @@ function loadMesh(loadedMesh) {
 	cameraMiniMap.position.set(5, box.max.y * 1.1, 15);
 	cameraMiniMap.lookAt(cameraAvatar.position);
 	cameraMiniMap.rotation.z = Math.PI / 2;
+
+	cameraRearview = cameraAvatar.clone();
+	cameraRearview.rotateY(Math.PI);
+	cameraRearview.updateProjectionMatrix();
 
 	//Add point light Source
 	var pointLight1 = new THREE.PointLight(new THREE.Color(1.0, 1.0, 1.0));
