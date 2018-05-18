@@ -16,13 +16,12 @@ function init() {
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-	circleGeometry = new THREE.CircleGeometry( 2, 32);
-	circleMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
-	circle = new THREE.Mesh( circleGeometry, circleMaterial );
-	circle.rotation.x -= Math.PI / 2;
-	circle.position.set(5, 1.7, 17);
+	avatarGeometry = new THREE.CircleGeometry( 2, 32);
+	avatarMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+	avatar = new THREE.Mesh( avatarGeometry, avatarMaterial );
+	avatar.rotation.x -= Math.PI / 2;
 
-	scene.add( circle );
+	scene.add( avatar );
 	
 
 	cameraAvatar = new THREE.PerspectiveCamera( 45.0, aspectRatio, 0.1, 10000.0 );
@@ -60,10 +59,10 @@ function render() {
 	cameraAvatar.updateProjectionMatrix();
 	cameraMiniMap.updateProjectionMatrix();
 
-	scene.remove(circle);
-	circle.position.x = cameraAvatar.position.x;
-	circle.position.z = cameraAvatar.position.z;
-	scene.add(circle);
+	scene.remove(avatar);
+	avatar.position.x = cameraAvatar.position.x;
+	avatar.position.z = cameraAvatar.position.z;
+	scene.add(avatar);
 
 	var left = 0;
 	var top = 0;
@@ -105,6 +104,7 @@ function loadMesh(loadedMesh) {
 	box = new THREE.Box3();
 	box.expandByObject(mesh);
 
+	avatar.position.set(5, box.max.y, 17);
 	
 	controlsAvatar.lookVertical = true;
 	controlsAvatar.constrainVertical = true;
