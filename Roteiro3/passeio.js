@@ -4,6 +4,7 @@ var cameraAvatar 		= null;
 var cameraMiniMap 		= null;
 var cameraRearview 		= null;
 var box 				= null;
+var mesh 				= null;
 
 function init() {
 
@@ -60,7 +61,22 @@ function render() {
 	cameraMiniMap.position.z = cameraAvatar.position.z;
 
 
-	cameraMiniMap.rotation = cameraAvatar.rotation;
+	// cameraMiniMap.rotation = cameraAvatar.rotation;
+
+	var matrix = new THREE.Matrix4();
+	matrix.extractRotation( cameraAvatar.matrix );
+
+	var direction = new THREE.Vector3( 0, 0, 1 );
+	direction.applyMatrix4(matrix);// = matrix.multiplyVector3( direction );
+
+	// console.log(direction, cameraMiniMap.up, cameraMiniMap.up.angleTo(direction))
+	var cross = new THREE.Vector3();
+	cross.crossVectors(cameraMiniMap.up, direction.projectOnPlane(new THREE.Vector3(0, 1, 0)))
+	if (cross.y > 0)
+		cameraMiniMap.rotateZ(cameraMiniMap.up.angleTo(direction.projectOnPlane(new THREE.Vector3(0, 1, 0))));
+	else if (cross.y < 0)
+		cameraMiniMap.rotateZ(-cameraMiniMap.up.angleTo(direction.projectOnPlane(new THREE.Vector3(0, 1, 0))));
+	cameraMiniMap.up = direction;
 
 	cameraAvatar.updateProjectionMatrix();
 	cameraMiniMap.updateProjectionMatrix();
