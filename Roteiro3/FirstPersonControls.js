@@ -51,6 +51,12 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
 
+	this.maxx = 1000000000;
+	this.minx = -1000000000;
+
+	this.maxz = 1000000000;
+	this.minz = -1000000000;
+
 	if ( this.domElement !== document ) {
 
 		this.domElement.setAttribute( 'tabindex', - 1 );
@@ -218,8 +224,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
+		this.object.position.x = Math.min(this.maxx, this.object.position.x);
+		this.object.position.x = Math.max(this.minx, this.object.position.x);
 
 		this.object.position.y = 1.7; //altura visao camera
+
+		this.object.position.z = Math.min(this.maxz, this.object.position.z);
+		this.object.position.z = Math.max(this.minz, this.object.position.z);
 
 		// if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
 		// if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );

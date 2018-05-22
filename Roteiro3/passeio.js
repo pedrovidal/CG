@@ -87,8 +87,8 @@ function render() {
 	scene.add(avatar);
 
 
-	cameraRearview.position.x = cameraAvatar.position.x;
-	cameraRearview.position.z = cameraAvatar.position.z;
+	// cameraRearview.position.x = cameraAvatar.position.x;
+	// cameraRearview.position.z = cameraAvatar.position.z;
 
 	cameraRearview = cameraAvatar.clone();
 	cameraRearview.rotateY(-Math.PI);
@@ -149,6 +149,11 @@ function loadMesh(loadedMesh) {
 	controlsAvatar.constrainVertical = true;
 	controlsAvatar.verticalMin = 1.1;
 	controlsAvatar.verticalMax = 2.0;
+
+	controlsAvatar.maxx = box.max.x;
+	controlsAvatar.minx = box.min.x;
+	controlsAvatar.maxz = box.max.z;
+	controlsAvatar.minz = box.min.z;
 
 	cameraAvatar.position.set(5, 1.7, 15); // y = altura visao camera avatar
 	cameraAvatar.lookAt(mesh.position);
