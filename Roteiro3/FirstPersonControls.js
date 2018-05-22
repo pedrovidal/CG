@@ -168,7 +168,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 			// case 76: /*L*/ this.activeLook = true; break;
 
-			case 32: /*space*/ this.movementSpeed = 3 * this.originalMovementSpeed; break;
+			case 32: /*space*/ event.preventDefault(); this.movementSpeed = 3 * this.originalMovementSpeed; break;
 
 		}
 
