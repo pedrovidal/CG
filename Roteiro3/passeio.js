@@ -12,7 +12,7 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer();
 
-	renderer.setClearColor(new THREE.Color(0.0, 0.0, 0.0));
+	renderer.setClearColor(/*new THREE.Color(0.0, 0.0, 0.0)*/0xADD8E6);
 	renderer.setSize(window.innerWidth*0.9, window.innerHeight*0.9);
 	aspectRatio = window.innerWidth/window.innerHeight;
 
@@ -40,7 +40,7 @@ function init() {
 	controlsAvatar.target = new THREE.Vector3(0,0,0);
 	clock = new THREE.Clock( true );
 
-	cameraMiniMap = new THREE.OrthographicCamera(100, -100, -100, 100, -100, 100);
+	cameraMiniMap = new THREE.OrthographicCamera(100, -100, -100, 100, 0.1, 100);
 	scene.add( cameraMiniMap );
 	
 	// Load Mesh
