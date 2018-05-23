@@ -12,9 +12,10 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer();
 
-	renderer.setClearColor(/*new THREE.Color(0.0, 0.0, 0.0)*/0xADD8E6);
+	renderer.setClearColor(/*new THREE.Color(0.0, 0.0, 0.0)*/0x87CEEB);
 	renderer.setSize(window.innerWidth*0.9, window.innerHeight*0.9);
-	aspectRatio = window.innerWidth/window.innerHeight;
+	// aspectRatio = window.innerWidth/window.innerHeight;
+	aspectRatio = 2.35;
 
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -178,10 +179,10 @@ function loadMesh(loadedMesh) {
 	scene.add(pointLight2);
 	
 	// Global Axis
-	var globalAxis = new THREE.AxesHelper	( Math.max(	(box.max.x - box.min.x),
-														(box.max.y - box.min.y),
-														(box.max.z - box.min.z)
-				  									  )
-											);
-	scene.add( globalAxis );
+	// var globalAxis = new THREE.AxesHelper	( Math.max(	(box.max.x - box.min.x),
+	// 													(box.max.y - box.min.y),
+	// 													(box.max.z - box.min.z)
+	// 			  									  )
+	// 										);
+	// scene.add( globalAxis );
 };
