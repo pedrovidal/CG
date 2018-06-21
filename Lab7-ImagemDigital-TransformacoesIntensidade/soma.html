@@ -20,12 +20,24 @@
 		
 		uniform sampler2D textureA;	
 		uniform sampler2D textureB;	
+		uniform sampler2D textureC;	
 		varying vec2 vUv;
 			
 		void main(void) {	
-			vec4 c = texture2D(textureA, vUv);
-			vec4 d = texture2D(textureB, vUv);
-			gl_FragColor = vec4(c.r, d.g, d.b, 1.0);
+			vec4 texA = texture2D(textureA, vUv);
+			vec4 texB = texture2D(textureB, vUv);
+			// vec4 texC = texture2D(textureC, vUv);
+			
+			vec4 soma = texA + texB;
+
+			vec4 media = vec4(0.5, 0.5, 0.5, 1);
+			
+			soma = soma * media;
+
+			// gl_FragColor = vec4((texA.rgb + texB.rgb)*aux.rgb, 1.0);
+			vec4 negative = vec4(1, 1, 1, 1);
+
+			gl_FragColor = vec4( negative.rgb - soma.rgb , 1.0);
 		}
 	</script>
 	

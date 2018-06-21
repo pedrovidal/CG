@@ -16,12 +16,13 @@ function init() {
 	var textureLoader = new THREE.TextureLoader();
 	texture = textureLoader.load("../../Assets/Images/lena.png");
 	texture2 = textureLoader.load("../../Assets/Images/barbara.png");
+	// texture3 = textureLoader.load("../../Assets/Images/brick-house.png");
 	
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 	// Global Axes
-	var globalAxes = new THREE.AxesHelper( 1.0 );
-	scene.add( globalAxes );
+	// var globalAxes = new THREE.AxesHelper( 1.0 );
+	// scene.add( globalAxes );
 
 	renderer.clear();
 	requestAnimationFrame(render);
@@ -35,7 +36,8 @@ function render() {
 	else {
 		uniforms = {
 			textureA: { type: "t", value:texture },
-			textureB: { type: "t", value:texture2 }
+			textureB: { type: "t", value:texture2 },
+			// textureC: { type: "t", value:texture3 },
 		};
 		
 		var matShader = new THREE.ShaderMaterial( {
