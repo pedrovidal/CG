@@ -42,6 +42,21 @@
 		}
 	</script>
 
+	<script id="sepia-fs" type="x-shader/x-fragment">
+		precision mediump float;
+		
+		uniform sampler2D texture;	
+		varying vec2 vUv;
+			
+		void main(void) {	
+			vec4 c = texture2D(texture, vUv);
+			float outputRed = (c.r * .393) + (c.g *.769) + (c.b * .189);
+			float outputGreen = (c.r * .349) + (c.g *.686) + (c.b * .168);
+			float outputBlue = (c.r * .272) + (c.g *.534) + (c.b * .131);
+			gl_FragColor = vec4( outputRed, outputGreen, outputBlue, 1.0);
+		}
+	</script>
+
 	<!-- <script id="binary-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		

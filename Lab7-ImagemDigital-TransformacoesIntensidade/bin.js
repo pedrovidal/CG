@@ -52,11 +52,11 @@ function render() {
 				fragmentShader: document.getElementById( 'grayscale-fs' ).textContent
 			} );
 		
-		// binaryShader = new THREE.ShaderMaterial( {
-		// 		uniforms: uniforms,
-		// 		vertexShader: document.getElementById( 'base-vs' ).textContent,
-		// 		fragmentShader: document.getElementById( 'binary-fs' ).textContent
-		// 	} );
+		sepiaShader = new THREE.ShaderMaterial( {
+				uniforms: uniforms,
+				vertexShader: document.getElementById( 'base-vs' ).textContent,
+				fragmentShader: document.getElementById( 'sepia-fs' ).textContent
+			} );
 
 		// Plane
 		var planeGeometry = new THREE.PlaneBufferGeometry(1.0, 1.0, 20, 20);                 
@@ -73,12 +73,12 @@ function render() {
 		shaderPass1 		= new THREE.ShaderPass(grayscaleShader);
 		shaderPass1.renderToScreen = true;
 
-		// shaderPass2 		= new THREE.ShaderPass(binaryShader);
-		// shaderPass2.renderToScreen = true;
+		shaderPass2 		= new THREE.ShaderPass(sepiaShader);
+		shaderPass2.renderToScreen = true;
 
 		composer.addPass(renderPass);
 		composer.addPass(shaderPass1);
-		// composer.addPass(shaderPass2);
+		composer.addPass(shaderPass2);
 		composer.render();
 
 		}
