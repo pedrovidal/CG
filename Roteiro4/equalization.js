@@ -301,7 +301,7 @@ function equalization(histogram, height, width, imagedata, color){
 			var colorB = Math.round(cB[getPixel(imagedata, i, j).b]*255);
 			// console.log(color)
 			if (color == 'grayscale'){
-				colorG = colorB = colorR;
+				colorG = colorB = colorR = 0.299 * colorR + 0.587 * colorG + 0.114 * colorB;
 			}
 			equalizedR[colorR]++;
 			equalizedG[colorG]++;
