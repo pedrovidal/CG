@@ -219,7 +219,7 @@ function calcHist(imagedata, isGrayscale){
 	
 			var colorHSV = rgbToHsv(color);
 
-			histogramHSV[colorHSV.b]++;
+			histogramHSV[colorHSV.b * 255]++;
 
 		}
 	}
@@ -483,7 +483,7 @@ function rgbToHsv(colorRGB){
 
 	colorHSV.r = h;
 	colorHSV.g = s;
-	colorHSV.b = v * 255;
+	colorHSV.b = v;
 
 	return colorHSV;
 }
@@ -493,7 +493,7 @@ function hsvToRgb(colorHSV){
 
 	var h = colorHSV.r;
 	var s = colorHSV.g;
-	var v = colorHSV.b / 255;
+	var v = colorHSV.b;
 
 	var c = s * v;
 	var x = c * (1 - Math.abs( (h/60) % 2 - 1) );
@@ -573,7 +573,7 @@ function equalizationHSV(imagedata){
 			
 			colorHSV = rgbToHsv(colorRGB);
 
-			colorHSV.b = c[colorHSV.b] * 255;
+			colorHSV.b = c[colorHSV.b * 255];
 
 			colorRGB = hsvToRgb(colorHSV);
 
