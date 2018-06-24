@@ -259,7 +259,7 @@ function render() {
 
 			var grayscaleHistogram = histogramR;
 			
-			equalization(grayscaleHistogram, imagedata.height, imagedata.width, imagedata, 'grayscale');
+			equalization(imagedata, 'grayscale');
 			
 			plotHistogram(grayscaleHistogram, imagedata.height, imagedata.width, 1, 'grayscale');
 		}
@@ -268,11 +268,11 @@ function render() {
 			calcHist(imagedata);
 			
 			if (equalizationControls.rgb){
-				equalization(histogramR, imagedata.height, imagedata.width, imagedata, 'rgb');
+				equalization(imagedata, 'rgb');
 			}
 
 			else if (equalizationControls.hsv){
-				equalizationHSV(histogramR, imagedata.height, imagedata.width, imagedata);
+				equalizationHSV(imagedata);
 			}
 
 			else if (equalizationControls.hsl){
@@ -358,8 +358,9 @@ function plotHistogram(histogram, height, width, histogramNumber, color){
 	}
 }
 
-function equalization(histogram, height, width, imagedata, color){
+function equalization(imagedata, color){
 
+	var height = imagedata.height, width = imagedata.width;
 
 	var cR = new Array(256);
 	var cG = new Array(256);
@@ -532,8 +533,9 @@ function hsvToRgb(colorHSV){
 	return colorRGB;
 }
 
-function equalizationHSV(histogram, height, width, imagedata){
+function equalizationHSV(imagedata){
 
+	var height = imagedata.height, width = imagedata.width;
 	var c = new Array(256);
 	var equalizedR = new Array(256);
 	var equalizedG = new Array(256);
