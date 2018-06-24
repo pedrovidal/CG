@@ -7,7 +7,18 @@ var camera;
 var histogramR = new Array(256);
 var histogramG = new Array(256);
 var histogramB = new Array(256);
+var histogramHSV = new Array(256);
 
+var colorControls = {
+	rgb: true,
+	grayscale: false
+};
+
+var equalizationControls = {
+	rgb: true,
+	hsv: false,
+	hsl: false,
+};
 
 function init() {
 
@@ -51,15 +62,21 @@ function initGui(){
 	// opcoes de cor
 	var colorGui = gui.addFolder('Color');
 
-	var controls = {
-		rgb: true,
-		grayscale: false
-	};
 
-	var colorRGBOpt = colorGui.add(controls, 'rgb').name('RGB').listen();
+	var colorRGBOpt = colorGui.add(colorControls, 'rgb').name('RGB').listen();
     colorRGBOpt.onChange(function(){
-    	controls.grayscale = false;
-    	
+    	if (colorControls.rgb == false){
+    		colorControls.rgb = true;
+    	}
+
+    	equalizationGui.open();
+
+    	colorControls.grayscale = false;
+    
+    	equalizationControls.rgb = true;
+    	equalizationControls.hsv = false;
+    	equalizationControls.hsl = false;
+
     	texture = textureRGB;
     	
     	clearScene();
@@ -67,9 +84,19 @@ function initGui(){
     	requestAnimationFrame(render);
     });
     
-    var colorGrayscaleOpt = colorGui.add(controls, 'grayscale').name('Grayscale').listen();
+    var colorGrayscaleOpt = colorGui.add(colorControls, 'grayscale').name('Grayscale').listen();
     colorGrayscaleOpt.onChange(function(){
-    	controls.rgb = false;
+    	if (colorControls.grayscale == false){
+    		colorControls.grayscale = true;
+    	}
+
+    	equalizationGui.close();
+
+    	colorControls.rgb = false;
+
+    	equalizationControls.rgb = false;
+    	equalizationControls.hsv = false;
+    	equalizationControls.hsl = false;
 
     	texture = textureGrayscale;
 
@@ -79,6 +106,60 @@ function initGui(){
     });
 
     colorGui.open();
+
+    var equalizationGui = gui.addFolder('Equalization');
+	
+
+	var equalizationRGBOpt = equalizationGui.add(equalizationControls, 'rgb').name('RGB').listen();
+	equalizationRGBOpt.onChange(function(){
+		if (equalizationControls.rgb == false){
+			equalizationControls.rgb = true;
+		}
+		if (colorControls.rgb == false){
+			equalizationControls.rgb = false;
+		}
+		equalizationControls.hsl = false;
+		equalizationControls.hsv = false;
+
+		clearScene();
+
+		requestAnimationFrame(render);
+	});
+
+	var equalizationHSVOpt = equalizationGui.add(equalizationControls, 'hsv').name('HSV').listen();
+	equalizationHSVOpt.onChange(function(){
+		if (equalizationControls.hsv == false){
+			equalizationControls.hsv = true;
+		}
+		if (colorControls.rgb == false){
+			equalizationControls.hsv = false;
+		}
+		equalizationControls.hsl = false;
+		equalizationControls.rgb = false;
+
+		clearScene();
+
+		requestAnimationFrame(render);
+	});
+
+	var equalizationHSLOpt = equalizationGui.add(equalizationControls, 'hsl').name('HSL').listen();
+	equalizationHSLOpt.onChange(function(){
+		if (equalizationControls.hsl == false){
+			equalizationControls.hsl = true;
+		}
+		if (colorControls.rgb == false){
+			equalizationControls.hsl = false;
+		}
+		equalizationControls.hsv = false;
+		equalizationControls.rgb = false;
+
+		clearScene();
+
+		requestAnimationFrame(render);
+	});
+
+	equalizationGui.open();
+
 }
 
 function getImageData( image ) {
@@ -123,6 +204,9 @@ function calcHist(imagedata, isGrayscale){
 		histogramR[i] = 0;
 		histogramG[i] = 0;
 		histogramB[i] = 0;
+		
+		histogramHSV[i] = 0;
+	
 	}
 
 	for (var i = 0; i < imagedata.height; i++){
@@ -132,6 +216,11 @@ function calcHist(imagedata, isGrayscale){
 			histogramR[color.r]++;
 			histogramG[color.g]++;
 			histogramB[color.b]++;
+	
+			var colorHSV = rgbToHsv(color);
+
+			histogramHSV[colorHSV.b]++;
+
 		}
 	}
 
@@ -178,8 +267,19 @@ function render() {
 		else{
 			calcHist(imagedata);
 			
-			equalization(histogramR, imagedata.height, imagedata.width, imagedata, 'rgb');
-			
+			if (equalizationControls.rgb){
+				equalization(histogramR, imagedata.height, imagedata.width, imagedata, 'rgb');
+			}
+
+			else if (equalizationControls.hsv){
+				equalizationHSV(histogramR, imagedata.height, imagedata.width, imagedata);
+			}
+
+			else if (equalizationControls.hsl){
+				//equalizationHSL(histogramR, imagedata.height, imagedata.width, imagedata);
+				alert("TODO hsl equalization");
+			}
+
 			plotHistogram(histogramR, imagedata.height, imagedata.width, 1, 'r');
 			plotHistogram(histogramG, imagedata.height, imagedata.width, 1, 'g');
 			plotHistogram(histogramB, imagedata.height, imagedata.width, 1, 'b');
@@ -290,22 +390,22 @@ function equalization(histogram, height, width, imagedata, color){
 		cB[i] /= height * width;
 	}
 	
-	console.log(height, width, height * width)
+	// console.log(height, width, height * width)
 
 	const pixelValues = [];
 
 	for (var i = 0; i < height; i++){
 		for (var j = 0; j < width ; j++){
-			var colorR = Math.round(cR[getPixel(imagedata, i, j).r]*255);
-			var colorG = Math.round(cG[getPixel(imagedata, i, j).g]*255);
-			var colorB = Math.round(cB[getPixel(imagedata, i, j).b]*255);
+			var colorR = cR[getPixel(imagedata, i, j).r]*255;
+			var colorG = cG[getPixel(imagedata, i, j).g]*255;
+			var colorB = cB[getPixel(imagedata, i, j).b]*255;
 			// console.log(color)
 			if (color == 'grayscale'){
 				colorG = colorB = colorR = 0.299 * colorR + 0.587 * colorG + 0.114 * colorB;
 			}
-			equalizedR[colorR]++;
-			equalizedG[colorG]++;
-			equalizedB[colorB]++;
+			equalizedR[Math.round(colorR)]++;
+			equalizedG[Math.round(colorG)]++;
+			equalizedB[Math.round(colorB)]++;
 			pixelValues.push(colorR, colorG, colorB);
 		}
 	}
@@ -318,6 +418,175 @@ function equalization(histogram, height, width, imagedata, color){
 		plotHistogram(equalizedG, height, width, 2, 'g');
 		plotHistogram(equalizedB, height, width, 2, 'b');
 	}
+	equalizedTexture = new THREE.DataTexture( Uint8Array.from(pixelValues), width, height, THREE.RGBFormat );
+	equalizedTexture.needsUpdate = true;
+
+
+	uniforms = {
+			textureA: { type: "t", value:equalizedTexture }
+		};
+		
+		var matShader = new THREE.ShaderMaterial( {
+				uniforms: uniforms,
+				vertexShader: document.getElementById( 'base-vs' ).textContent,
+				fragmentShader: document.getElementById( 'base-fs' ).textContent
+			} );
+
+		// Plane
+		var planeGeometry = new THREE.PlaneBufferGeometry(0.8, 0.8, 20, 20);                 
+		var equalizedPlane = new THREE.Mesh( planeGeometry, matShader );
+		equalizedPlane.position.set(0.7, 0.6, -0.5);
+		equalizedPlane.rotation.z = - Math.PI / 2;
+		scene.add( equalizedPlane );	
+
+}
+
+function rgbToHsv(colorRGB){
+	var colorHSV = colorRGB;
+	var rl = colorRGB.r / 255;
+	var gl = colorRGB.g / 255;
+	var bl = colorRGB.b / 255;
+
+	var Cmax = Math.max(rl, gl, bl);
+	var Cmin = Math.min(rl, gl, bl);
+
+	var delta = Cmax - Cmin;
+
+	var h, s, v;
+
+	if (delta == 0){
+		h = 0;
+	}
+	else if (Cmax == rl){
+		h = 60 * ( ( (gl - bl) / delta) % 6);
+	}
+	else if (Cmax == gl){
+		h = 60 * ( ( (bl - rl) / delta) + 2);
+	}
+	else if (Cmax == bl){
+		h = 60 * ( ( (rl - gl) / delta) + 4);
+	}
+
+	if (h < 0){
+		h += 360;
+	}
+
+	if (Cmax == 0){
+		s = 0;
+	}
+	else{
+		s = delta / Cmax;
+	}
+
+	v = Cmax;
+
+	colorHSV.r = h;
+	colorHSV.g = s;
+	colorHSV.b = v * 255;
+
+	return colorHSV;
+}
+
+function hsvToRgb(colorHSV){
+	var colorRGB = colorHSV;
+
+	var h = colorHSV.r;
+	var s = colorHSV.g;
+	var v = colorHSV.b / 255;
+
+	var c = s * v;
+	var x = c * (1 - Math.abs( (h/60) % 2 - 1) );
+	var m = v - c;
+
+	var rl = 0, gl = 0, bl = 0;
+
+	if (0 <= h && h < 60){
+		rl = c;
+		gl = x;
+	}
+	else if (h < 120){
+		rl = x;
+		gl = c;
+	}
+	else if (h < 180){
+		gl = c;
+		bl = x;
+	}
+	else if (h < 240){
+		gl = x;
+		bl = c;
+	}
+	else if (h < 300){
+		rl = x;
+		bl = c;
+	}
+	else if (h < 360){
+		rl = c;
+		bl = x;
+	}
+
+	colorRGB.r = (rl+m)*255;
+	colorRGB.g = (gl+m)*255;
+	colorRGB.b = (bl+m)*255;
+
+	return colorRGB;
+}
+
+function equalizationHSV(histogram, height, width, imagedata){
+
+	var c = new Array(256);
+	var equalizedR = new Array(256);
+	var equalizedG = new Array(256);
+	var equalizedB = new Array(256);
+
+	for (var i = 0; i < 256; i++){
+		equalizedR[i] = 0;
+		equalizedG[i] = 0;
+		equalizedB[i] = 0;
+	}
+
+	c[0] = histogramHSV[0];
+
+	for (var i = 1; i < 256; i++){
+		c[i] = histogramHSV[i] + c[i - 1];
+	}
+
+	for (var i = 1; i < 256; i++){
+		c[i] /= height * width;
+		// console.log(c[i]);
+	}
+	
+	// console.log(height, width, height * width)
+
+	const pixelValues = [];
+
+	var colorRGB = new THREE.Color(0, 0, 0);
+
+	for (var i = 0; i < height; i++){
+		for (var j = 0; j < width ; j++){
+			
+			colorRGB.r = getPixel(imagedata, i, j).r;
+			colorRGB.g = getPixel(imagedata, i, j).g;
+			colorRGB.b = getPixel(imagedata, i, j).b;
+			
+			colorHSV = rgbToHsv(colorRGB);
+
+			colorHSV.b = c[colorHSV.b] * 255;
+
+			colorRGB = hsvToRgb(colorHSV);
+
+			equalizedR[Math.round(colorRGB.r)]++;
+			equalizedG[Math.round(colorRGB.g)]++;
+			equalizedB[Math.round(colorRGB.b)]++;
+
+			pixelValues.push(colorRGB.r, colorRGB.g, colorRGB.b);
+		}
+	}
+
+	plotHistogram(equalizedR, height, width, 2, 'r');
+	plotHistogram(equalizedG, height, width, 2, 'g');
+	plotHistogram(equalizedB, height, width, 2, 'b');
+	
 	equalizedTexture = new THREE.DataTexture( Uint8Array.from(pixelValues), width, height, THREE.RGBFormat );
 	equalizedTexture.needsUpdate = true;
 
