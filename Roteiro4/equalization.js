@@ -178,7 +178,7 @@ function getImageData( image ) {
 function getPixel( imagedata, x, y ) {
 
     var position = ( x + imagedata.width * y ) * 4, data = imagedata.data;
-    return { r: data[ position ], g: data[ position + 1 ], b: data[ position + 2 ], a: data[ position + 3 ] };
+    return new THREE.Color(data[ position ], data[ position + 1], data[ position + 2]);
 
 }
 
