@@ -15,7 +15,7 @@
 		}
 	</script>
 	
-	<script id="grayscale-fs" type="x-shader/x-fragment">
+<!-- 	<script id="grayscale-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
 		uniform sampler2D texture;	
@@ -27,7 +27,7 @@
 			float color = dot(c.rgb, grayscale.rgb);
 			gl_FragColor = vec4( color, color, color, 1.0);
 		}
-	</script>
+	</script> -->
 	
 	<script id="base-fs" type="x-shader/x-fragment">
 		precision mediump float;
@@ -42,7 +42,7 @@
 		}
 	</script>
 
-	<script id="sepia-fs" type="x-shader/x-fragment">
+<!-- 	<script id="sepia-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
 		uniform sampler2D texture;	
@@ -57,25 +57,97 @@
 		}
 	</script>
 
-	<!-- <script id="binary-fs" type="x-shader/x-fragment">
+	<script id="binary-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
-		uniform sampler2D texture;	
+		uniform sampler2D texture;
+		uniform float threshold;
 		varying vec2 vUv;
 			
 		void main(void) {	
 			vec4 c = texture2D(texture, vUv);
-			vec4 grayscale = vec4(0.299, 0.587, 0.114, 1);
-			float color = dot(c.rgb, grayscale.rgb);
-			if (color > 128.0){
-				color = 255.0;
+			// vec4 grayscale = vec4(0.299, 0.587, 0.114, 1);
+			// float color = dot(c.rgb, grayscale.rgb);
+			float colorR, colorG, colorB;
+			if (c.r > threshold && c.g > threshold && c.b > threshold){
+				colorR = c.r;
+				colorG = c.g;
+				colorB = c.b;
 			}
 			else{
-				color = 0.0;
+				colorR = 0.0;
+				colorG = 0.0;
+				colorB = 0.0;
 			}
-			gl_FragColor = vec4( color, color, color, 1.0);
+			gl_FragColor = vec4( colorR, colorG, colorB, 1.0);
 		}
 	</script> -->
+
+		<script id="shader-fs" type="x-shader/x-fragment">
+		precision mediump float;
+		
+		uniform sampler2D textureA;	
+		uniform sampler2D textureB;	
+		uniform sampler2D textureC;
+
+		uniform bool negativeFlag;
+		uniform bool sepiaFlag;
+		uniform bool grayscaleFlag;
+		
+		uniform float alpha;
+		uniform float threshold;
+		varying vec2 vUv;
+			
+		void main(void) {	
+			vec4 texA = texture2D(textureA, vUv);
+			vec4 texB = texture2D(textureB, vUv);
+			// vec4 texC = texture2D(textureC, vUv);
+			
+			vec4 soma = texA + texB;
+
+			vec4 media = vec4(0.5, 0.5, 0.5, 1);
+			
+			soma = soma * media;
+
+			// gl_FragColor = vec4((texA.rgb + texB.rgb)*aux.rgb, 1.0);
+			vec4 negative = vec4(1, 1, 1, 1);
+
+			// gl_FragColor = vec4( negative.rgb - soma.rgb , 1.0);
+			float colorR, colorG, colorB;
+
+			colorR = (1.0 - alpha) * texA.r + alpha * texB.r;
+			colorG = (1.0 - alpha) * texA.g + alpha * texB.g;
+			colorB = (1.0 - alpha) * texA.b + alpha * texB.b;
+
+			if (negativeFlag){
+				colorR = 1.0 - colorR; 
+				colorG = 1.0 - colorG; 
+				colorB = 1.0 - colorB; 
+			}
+
+			if (colorR <= threshold || colorG <= threshold || colorB <= threshold){
+				colorR = 0.0;
+				colorG = 0.0;
+				colorB = 0.0;
+			}
+
+			if (sepiaFlag){
+				float oldcR = colorR;
+				float oldcG = colorG;
+				float oldcB = colorB;
+				colorR = (oldcR * .393) + (oldcG *.769) + (oldcB * .189);
+				colorG = (oldcR * .349) + (oldcG *.686) + (oldcB * .168);
+				colorB = (oldcR * .272) + (oldcG *.534) + (oldcB * .131);
+			}
+
+			if (grayscaleFlag){
+				vec4 grayscale = vec4(0.299, 0.587, 0.114, 1);
+				colorR = colorG = colorB = colorR * grayscale.r + colorG * grayscale.g + colorB * grayscale.b;
+			}
+
+			gl_FragColor = vec4( colorR, colorG, colorB , 1.0);
+		}
+	</script>
 
 	<script type="text/javascript" src="../libs/three.js"></script>
     <script type="text/javascript" src="../libs/examples/js/shaders/CopyShader.js"></script>
@@ -83,6 +155,7 @@
     <script type="text/javascript" src="../libs/examples/js/postprocessing/ShaderPass.js"></script>
     <script type="text/javascript" src="../libs/examples/js/postprocessing/MaskPass.js"></script>
     <script type="text/javascript" src="../libs/examples/js/postprocessing/RenderPass.js"></script>
+	<script type='text/javascript' src='DAT.GUI.min.js'></script>
 	<script type="text/javascript" src="bin.js"></script>
 		
 	<body onload="init();">

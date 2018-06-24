@@ -37,13 +37,16 @@ function render() {
 		uniforms = {
 			textureA: { type: "t", value:texture },
 			textureB: { type: "t", value:texture2 },
+			alpha: {type: "t", value: 0.6},
+			negativeFlag: {type: "t", value: true},
+
 			// textureC: { type: "t", value:texture3 },
 		};
 		
 		var matShader = new THREE.ShaderMaterial( {
 				uniforms: uniforms,
 				vertexShader: document.getElementById( 'base-vs' ).textContent,
-				fragmentShader: document.getElementById( 'base-fs' ).textContent
+				fragmentShader: document.getElementById( 'blending-fs' ).textContent
 			} );
 		
 		// Plane
