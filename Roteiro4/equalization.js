@@ -142,21 +142,21 @@ function initGui(){
 		requestAnimationFrame(render);
 	});
 
-	var equalizationHSLOpt = equalizationGui.add(equalizationControls, 'hsl').name('HSL').listen();
-	equalizationHSLOpt.onChange(function(){
-		if (equalizationControls.hsl == false){
-			equalizationControls.hsl = true;
-		}
-		if (colorControls.rgb == false){
-			equalizationControls.hsl = false;
-		}
-		equalizationControls.hsv = false;
-		equalizationControls.rgb = false;
+	// var equalizationHSLOpt = equalizationGui.add(equalizationControls, 'hsl').name('HSL').listen();
+	// equalizationHSLOpt.onChange(function(){
+	// 	if (equalizationControls.hsl == false){
+	// 		equalizationControls.hsl = true;
+	// 	}
+	// 	if (colorControls.rgb == false){
+	// 		equalizationControls.hsl = false;
+	// 	}
+	// 	equalizationControls.hsv = false;
+	// 	equalizationControls.rgb = false;
 
-		clearScene();
+	// 	clearScene();
 
-		requestAnimationFrame(render);
-	});
+	// 	requestAnimationFrame(render);
+	// });
 
 	equalizationGui.open();
 
@@ -275,10 +275,10 @@ function render() {
 				equalizationHSV(imagedata);
 			}
 
-			else if (equalizationControls.hsl){
-				//equalizationHSL(histogramR, imagedata.height, imagedata.width, imagedata);
-				alert("TODO hsl equalization");
-			}
+			// else if (equalizationControls.hsl){
+			// 	//equalizationHSL(histogramR, imagedata.height, imagedata.width, imagedata);
+			// 	alert("TODO hsl equalization");
+			// }
 
 			plotHistogram(histogramR, imagedata.height, imagedata.width, 1, 'r');
 			plotHistogram(histogramG, imagedata.height, imagedata.width, 1, 'g');
