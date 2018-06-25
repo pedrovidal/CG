@@ -34,17 +34,11 @@ function init() {
 	
 	var textureLoader = new THREE.TextureLoader();
 
-	texture = textureLoader.load("../../Assets/Images/lena.png");
-	textureRGB = textureLoader.load("../../Assets/Images/lena.png");
-	textureGrayscale = textureLoader.load("../../Assets/Images/grayscale_lena.png");
-
-	// textureGrayscale = textureLoader.load("./over-exposed_image.png");
+	texture = textureLoader.load(/*"../../Assets/Images/ */"lena.png");
+	textureRGB = textureLoader.load(/*"../../Assets/Images/ */"lena.png");
+	textureGrayscale = textureLoader.load(/*"../../Assets/Images/ */"grayscale_lena.png");
 	
 	document.getElementById("WebGL-output").appendChild(renderer.domElement);
-
-	// Global Axes
-	// var globalAxes = new THREE.AxesHelper( 1.0 );
-	// scene.add( globalAxes );
 
 	renderer.clear();
 	requestAnimationFrame(render);
@@ -142,22 +136,6 @@ function initGui(){
 		requestAnimationFrame(render);
 	});
 
-	// var equalizationHSLOpt = equalizationGui.add(equalizationControls, 'hsl').name('HSL').listen();
-	// equalizationHSLOpt.onChange(function(){
-	// 	if (equalizationControls.hsl == false){
-	// 		equalizationControls.hsl = true;
-	// 	}
-	// 	if (colorControls.rgb == false){
-	// 		equalizationControls.hsl = false;
-	// 	}
-	// 	equalizationControls.hsv = false;
-	// 	equalizationControls.rgb = false;
-
-	// 	clearScene();
-
-	// 	requestAnimationFrame(render);
-	// });
-
 	equalizationGui.open();
 
 }
@@ -182,22 +160,6 @@ function getPixel( imagedata, x, y ) {
 
 }
 
-function isGrayscale(imagedata){
-
-	for (var i = 0; i < imagedata.height; i++){
-		for (var j = 0; j < imagedata.width; j++){
-			var color = getPixel(imagedata, i, j);
-			if (color.r != color.g || color.r != color.b || color.g != color.b){
-				renderer.setClearColor(new THREE.Color(1.0, 1.0, 1.0));
-				return false;
-			}
-		}
-	}
-
-	renderer.setClearColor(new THREE.Color(1.0, 0.0, 0.0));
-	return true;
-}
-
 function calcHist(imagedata, isGrayscale){
 
 	for (var i = 0; i < 256; i++){
@@ -219,7 +181,7 @@ function calcHist(imagedata, isGrayscale){
 	
 			var colorHSV = rgbToHsv(color);
 
-			histogramHSV[colorHSV.b * 255]++;
+			histogramHSV[Math.round(colorHSV.b * 255)]++;
 
 		}
 	}
@@ -234,12 +196,10 @@ function render() {
 
 		var imagedata = getImageData( texture.image );
 
-		var grayscale = isGrayscale(imagedata);
+		var grayscale = colorControls.grayscale;
 
 		uniforms = {
 			textureA: { type: "t", value:texture },
-			// textureB: { type: "t", value:texture2 },
-			// textureC: { type: "t", value:texture3 },
 		};
 		
 		var matShader = new THREE.ShaderMaterial( {
@@ -255,6 +215,8 @@ function render() {
 		scene.add( plane );	
 
 		if (grayscale){
+			renderer.setClearColor(new THREE.Color(1.0, 0.0, 0.0));
+
 			calcHist(imagedata);
 
 			var grayscaleHistogram = histogramR;
@@ -265,6 +227,8 @@ function render() {
 		}
 
 		else{
+			renderer.setClearColor(new THREE.Color(1.0, 1.0, 1.0));
+
 			calcHist(imagedata);
 			
 			if (equalizationControls.rgb){
@@ -274,11 +238,6 @@ function render() {
 			else if (equalizationControls.hsv){
 				equalizationHSV(imagedata);
 			}
-
-			// else if (equalizationControls.hsl){
-			// 	//equalizationHSL(histogramR, imagedata.height, imagedata.width, imagedata);
-			// 	alert("TODO hsl equalization");
-			// }
 
 			plotHistogram(histogramR, imagedata.height, imagedata.width, 1, 'r');
 			plotHistogram(histogramG, imagedata.height, imagedata.width, 1, 'g');
@@ -291,11 +250,8 @@ function render() {
 }
 
 function plotHistogram(histogram, height, width, histogramNumber, color){
-	
-	// var barGeometry = new THREE.PlaneGeometry(1/255, 1, 1, 1);
 
 	var maxV = - 1, minV = height * width + 1;
-
 
 	for (var i = 0; i < 256; i++){
 		maxV = Math.max(maxV, histogram[i])
@@ -311,7 +267,6 @@ function plotHistogram(histogram, height, width, histogramNumber, color){
 		barMaterial.color = new THREE.Color(0x0000ff);
 	}
 
-
 	var heightColor = -0.2;
 
 	if (color == 'g'){
@@ -325,7 +280,6 @@ function plotHistogram(histogram, height, width, histogramNumber, color){
 	for (var i = 0; i < 256; i++){
 	
 		histogram[i] = 	histogram[i] / maxV;
-		// console.log(histogram[i])
 
 		var barHeight = (histogram[i])/4;
 
@@ -424,21 +378,21 @@ function equalization(imagedata, color){
 
 
 	uniforms = {
-			textureA: { type: "t", value:equalizedTexture }
-		};
-		
-		var matShader = new THREE.ShaderMaterial( {
-				uniforms: uniforms,
-				vertexShader: document.getElementById( 'base-vs' ).textContent,
-				fragmentShader: document.getElementById( 'base-fs' ).textContent
-			} );
+		textureA: { type: "t", value:equalizedTexture }
+	};
+	
+	var matShader = new THREE.ShaderMaterial( {
+		uniforms: uniforms,
+		vertexShader: document.getElementById( 'base-vs' ).textContent,
+		fragmentShader: document.getElementById( 'base-fs' ).textContent
+	} );
 
-		// Plane
-		var planeGeometry = new THREE.PlaneBufferGeometry(0.8, 0.8, 20, 20);                 
-		var equalizedPlane = new THREE.Mesh( planeGeometry, matShader );
-		equalizedPlane.position.set(0.7, 0.6, -0.5);
-		equalizedPlane.rotation.z = - Math.PI / 2;
-		scene.add( equalizedPlane );	
+	// Plane
+	var planeGeometry = new THREE.PlaneBufferGeometry(0.8, 0.8, 20, 20);                
+	var equalizedPlane = new THREE.Mesh( planeGeometry, matShader );
+	equalizedPlane.position.set(0.7, 0.6, -0.5);
+	equalizedPlane.rotation.z = - Math.PI / 2;
+	scene.add( equalizedPlane );
 
 }
 
@@ -555,11 +509,8 @@ function equalizationHSV(imagedata){
 
 	for (var i = 1; i < 256; i++){
 		c[i] /= height * width;
-		// console.log(c[i]);
 	}
 	
-	// console.log(height, width, height * width)
-
 	const pixelValues = [];
 
 	var colorRGB = new THREE.Color(0, 0, 0);
@@ -573,7 +524,7 @@ function equalizationHSV(imagedata){
 			
 			colorHSV = rgbToHsv(colorRGB);
 
-			colorHSV.b = c[colorHSV.b * 255];
+			colorHSV.b = c[Math.round(colorHSV.b * 255)];
 
 			colorRGB = hsvToRgb(colorHSV);
 
@@ -594,20 +545,20 @@ function equalizationHSV(imagedata){
 
 
 	uniforms = {
-			textureA: { type: "t", value:equalizedTexture }
-		};
-		
-		var matShader = new THREE.ShaderMaterial( {
-				uniforms: uniforms,
-				vertexShader: document.getElementById( 'base-vs' ).textContent,
-				fragmentShader: document.getElementById( 'base-fs' ).textContent
-			} );
+		textureA: { type: "t", value:equalizedTexture }
+	};
+	
+	var matShader = new THREE.ShaderMaterial( {
+		uniforms: uniforms,
+		vertexShader: document.getElementById( 'base-vs' ).textContent,
+		fragmentShader: document.getElementById( 'base-fs' ).textContent
+	} );
 
-		// Plane
-		var planeGeometry = new THREE.PlaneBufferGeometry(0.8, 0.8, 20, 20);                 
-		var equalizedPlane = new THREE.Mesh( planeGeometry, matShader );
-		equalizedPlane.position.set(0.7, 0.6, -0.5);
-		equalizedPlane.rotation.z = - Math.PI / 2;
-		scene.add( equalizedPlane );	
+	// Plane
+	var planeGeometry = new THREE.PlaneBufferGeometry(0.8, 0.8, 20, 20);                
+	var equalizedPlane = new THREE.Mesh( planeGeometry, matShader );
+	equalizedPlane.position.set(0.7, 0.6, -0.5);
+	equalizedPlane.rotation.z = - Math.PI / 2;
+	scene.add( equalizedPlane );
 
 }
