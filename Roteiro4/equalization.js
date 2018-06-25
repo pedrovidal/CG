@@ -175,9 +175,9 @@ function calcHist(imagedata, isGrayscale){
 		for (var j = 0; j < imagedata.width; j++){
 			var color = getPixel(imagedata, i, j);
 			// console.log(color.r);
-			histogramR[color.r]++;
-			histogramG[color.g]++;
-			histogramB[color.b]++;
+			histogramR[Math.round(color.r)]++;
+			histogramG[Math.round(color.g)]++;
+			histogramB[Math.round(color.b)]++;
 	
 			var colorHSV = rgbToHsv(color);
 
@@ -281,9 +281,11 @@ function plotHistogram(histogram, height, width, histogramNumber, color){
 	
 		histogram[i] = 	histogram[i] / maxV;
 
+		if (histogram[i] == 0) {
+			continue;
+		}
+		
 		var barHeight = (histogram[i])/4;
-
-		if (histogram[i] == 0) barHeight = 0.0000001;
 
 		var barGeometry = new THREE.PlaneGeometry(2/width, barHeight, 1, 1);
 	
@@ -351,9 +353,9 @@ function equalization(imagedata, color){
 
 	for (var i = 0; i < height; i++){
 		for (var j = 0; j < width ; j++){
-			var colorR = cR[getPixel(imagedata, i, j).r]*255;
-			var colorG = cG[getPixel(imagedata, i, j).g]*255;
-			var colorB = cB[getPixel(imagedata, i, j).b]*255;
+			var colorR = cR[Math.round(getPixel(imagedata, i, j).r)]*255;
+			var colorG = cG[Math.round(getPixel(imagedata, i, j).g)]*255;
+			var colorB = cB[Math.round(getPixel(imagedata, i, j).b)]*255;
 			// console.log(color)
 			if (color == 'grayscale'){
 				colorG = colorB = colorR = 0.299 * colorR + 0.587 * colorG + 0.114 * colorB;
