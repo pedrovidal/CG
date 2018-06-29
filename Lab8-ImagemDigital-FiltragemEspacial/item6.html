@@ -1,0 +1,75 @@
+<html>
+	
+	<head>
+		<title>MATA65 - Computacao Grafica</title>
+		<h1>Imagem Digital - Filtragem Espacial.</h1>
+		<h3>Aplicando um filtro de suavizacao.</h3>
+	</head>
+	   
+	<script id="base-vs" type="x-shader/x-vertex">		
+	
+		varying vec2 vUv;			
+		void main(void) {
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		}
+	</script>
+	
+	<script id="prewit-fs" type="x-shader/x-fragment">
+		precision mediump float;
+		
+		uniform sampler2D tDiffuse;
+		uniform vec2 uPixelSize;
+		varying vec2 vUv;
+		
+		vec4 c;
+
+		void main(void) {	
+			vec4 adj[9];
+
+			adj[0] = texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, -uPixelSize.y));
+			adj[1] = texture2D(tDiffuse, vUv + vec2(  0.0, -uPixelSize.y));
+			adj[2] = texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, -uPixelSize.y));
+			adj[3] = texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, 0.0));
+			adj[4] = texture2D(tDiffuse, vUv);
+			adj[5] = texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, 0.0));
+			adj[6] = texture2D(tDiffuse, vUv + vec2( -uPixelSize.x,  uPixelSize.y));
+			adj[7] = texture2D(tDiffuse, vUv + vec2(  0.0, uPixelSize.y));
+			adj[8] = texture2D(tDiffuse, vUv + vec2(  uPixelSize.x,  uPixelSize.y));
+
+			vec4 sobelv = -adj[0] + adj[2] - adj[3] + adj[5] - adj[6] + adj[8];
+			
+			vec4 sobelh = -adj[0] - adj[1] - adj[2] + adj[6] + adj[7] + adj[8];
+
+			vec4 sobel = sqrt(sobelh * sobelh + sobelv * sobelv);
+
+			gl_FragColor = vec4(sobel.rgb, 1.0);
+		}
+	</script>
+
+	<script id="grayscale-fs" type="x-shader/x-fragment">
+		precision mediump float;
+		
+		uniform sampler2D tDiffuse;	
+		varying vec2 vUv;
+			
+		void main(void) {	
+			vec4 c = texture2D(tDiffuse, vUv);
+			vec4 grayscale = vec4(0.299, 0.587, 0.114, 1);
+			float color = dot(c.rgb, grayscale.rgb);
+			gl_FragColor = vec4( color, color, color, 1.0);
+		}
+	</script>
+
+	<script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/examples/js/shaders/CopyShader.js"></script>
+    <script type="text/javascript" src="../libs/examples/js/postprocessing/EffectComposer.js"></script>
+    <script type="text/javascript" src="../libs/examples/js/postprocessing/ShaderPass.js"></script>
+    <script type="text/javascript" src="../libs/examples/js/postprocessing/RenderPass.js"></script>
+	<script type="text/javascript" src="../libs/examples/js/libs/dat.gui.min.js"></script>
+	<script type="text/javascript" src="item6.js"></script>
+		
+	<body onload="init();">
+		<div id="WebGL-output" ></div>
+	</body>
+</html>
