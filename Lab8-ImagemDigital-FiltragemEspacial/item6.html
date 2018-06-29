@@ -15,7 +15,7 @@
 		}
 	</script>
 	
-	<script id="prewit-fs" type="x-shader/x-fragment">
+	<script id="prewitt-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
 		uniform sampler2D tDiffuse;
@@ -37,13 +37,14 @@
 			adj[7] = texture2D(tDiffuse, vUv + vec2(  0.0, uPixelSize.y));
 			adj[8] = texture2D(tDiffuse, vUv + vec2(  uPixelSize.x,  uPixelSize.y));
 
-			vec4 sobelv = -adj[0] + adj[2] - adj[3] + adj[5] - adj[6] + adj[8];
+			vec4 prewittv = -adj[0] + adj[2] - adj[3] + adj[5] - adj[6] + adj[8];
 			
-			vec4 sobelh = -adj[0] - adj[1] - adj[2] + adj[6] + adj[7] + adj[8];
+			vec4 prewitth = -adj[0] - adj[1] - adj[2] + adj[6] + adj[7] + adj[8];
 
-			vec4 sobel = sqrt(sobelh * sobelh + sobelv * sobelv);
+			vec4 prewitt = sqrt(prewitth * prewitth + prewittv * prewittv);
 
-			gl_FragColor = vec4(sobel.rgb, 1.0);
+			gl_FragColor = vec4(prewitt.rgb, 1.0);
+
 		}
 	</script>
 

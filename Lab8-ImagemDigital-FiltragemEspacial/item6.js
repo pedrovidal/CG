@@ -33,13 +33,13 @@ function onLoadTexture() {
 
 	renderer.setSize(texture.image.width, texture.image.height);
 		
-	prewitShader = new THREE.ShaderMaterial( {
+	prewittShader = new THREE.ShaderMaterial( {
 			uniforms: {
 				tDiffuse: 	{ type: "t", value:texture },
 				uPixelSize:	{ type: "v2", value: new THREE.Vector2(1.0/texture.image.width, 1.0/texture.image.height) }
 			},
 			vertexShader: document.getElementById( 'base-vs' ).textContent,
-			fragmentShader: document.getElementById( 'prewit-fs' ).textContent
+			fragmentShader: document.getElementById( 'prewitt-fs' ).textContent
 		});
 
 	grayscaleShader = new THREE.ShaderMaterial( {
@@ -59,7 +59,7 @@ function onLoadTexture() {
 	shaderPass 	= new THREE.ShaderPass(grayscaleShader);
 	composer.addPass(shaderPass);
 
-	shaderPass2 	= new THREE.ShaderPass(prewitShader);
+	shaderPass2 	= new THREE.ShaderPass(prewittShader);
 	shaderPass2.renderToScreen = true;
 	composer.addPass(shaderPass2);
 
