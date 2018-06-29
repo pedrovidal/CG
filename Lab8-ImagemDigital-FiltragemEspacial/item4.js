@@ -35,7 +35,7 @@ function onLoadTexture() {
 		
 	suavizaShader = new THREE.ShaderMaterial( {
 			uniforms: {
-				uSampler: 	{ type: "t", value:texture },
+				tDiffuse: 	{ type: "t", value:texture },
 				uPixelSize:	{ type: "v2", value: new THREE.Vector2(1.0/texture.image.width, 1.0/texture.image.height) }
 			},
 			vertexShader: document.getElementById( 'base-vs' ).textContent,
@@ -44,7 +44,7 @@ function onLoadTexture() {
 
 	grayscaleShader = new THREE.ShaderMaterial( {
 			uniforms: {
-				texture: 	{ type: "t", value:texture },
+				tDiffuse: 	{ type: "t", value:texture },
 			},
 			vertexShader: document.getElementById( 'base-vs' ).textContent,
 			fragmentShader: document.getElementById( 'grayscale-fs' ).textContent

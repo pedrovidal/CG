@@ -18,22 +18,22 @@
 	<script id="suaviza-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
-		uniform sampler2D uSampler;
+		uniform sampler2D tDiffuse;
 		uniform vec2 uPixelSize;
 		varying vec2 vUv;
 		
 		vec4 c;
 
 		void main(void) {	
-			c = (	texture2D(uSampler, vUv) +
-					texture2D(uSampler, vUv + vec2( -uPixelSize.x, 0.0)) +
-					texture2D(uSampler, vUv + vec2(  uPixelSize.x, 0.0)) +
-					texture2D(uSampler, vUv + vec2(  0.0, -uPixelSize.y)) +
-					texture2D(uSampler, vUv + vec2(  0.0, uPixelSize.y)) +
-					texture2D(uSampler, vUv + vec2(  uPixelSize.x,  uPixelSize.y)) +	   				
-					texture2D(uSampler, vUv + vec2( -uPixelSize.x,  uPixelSize.y)) +   				
-					texture2D(uSampler, vUv + vec2(  uPixelSize.x, -uPixelSize.y)) +	   				
-					texture2D(uSampler, vUv + vec2( -uPixelSize.x, -uPixelSize.y))    				
+			c = (	texture2D(tDiffuse, vUv) +
+					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, 0.0)) +
+					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, 0.0)) +
+					texture2D(tDiffuse, vUv + vec2(  0.0, -uPixelSize.y)) +
+					texture2D(tDiffuse, vUv + vec2(  0.0, uPixelSize.y)) +
+					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x,  uPixelSize.y)) +	   				
+					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x,  uPixelSize.y)) +   				
+					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, -uPixelSize.y)) +	   				
+					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, -uPixelSize.y))    				
 				  ) / 9.0;
 			
 			gl_FragColor = c;
@@ -43,11 +43,11 @@
 	<script id="grayscale-fs" type="x-shader/x-fragment">
 		precision mediump float;
 		
-		uniform sampler2D texture;	
+		uniform sampler2D tDiffuse;	
 		varying vec2 vUv;
 			
 		void main(void) {	
-			vec4 c = texture2D(texture, vUv);
+			vec4 c = texture2D(tDiffuse, vUv);
 			vec4 grayscale = vec4(0.299, 0.587, 0.114, 1);
 			float color = dot(c.rgb, grayscale.rgb);
 			gl_FragColor = vec4( color, color, color, 1.0);
