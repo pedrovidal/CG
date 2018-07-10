@@ -3,6 +3,7 @@ var scene;
 var camera;
 var composer;
 var texture;
+var texture2;
 var shaderPass;
 
 function init() {
@@ -17,6 +18,7 @@ function init() {
 	
 	var textureLoader = new THREE.TextureLoader();
 	texture = textureLoader.load("../../Assets/Images/lena.png", onLoadTexture);
+	texture2 = textureLoader.load("../../Assets/Images/lena.png", onLoadTexture);
 	var txtMaterial = new THREE.MeshBasicMaterial( { 
 					map : texture
 					} );
@@ -68,14 +70,6 @@ function onLoadTexture() {
 			fragmentShader: document.getElementById( 'suaviza-fs' ).textContent
 		});
 
-	binaryShader = new THREE.ShaderMaterial( {
-			uniforms: {
-				tDiffuse: 	{ type: "t", value:texture },
-				threshold: 	{ type: "float", value: 0.09},  
-			},
-			vertexShader: document.getElementById( 'base-vs' ).textContent,
-			fragmentShader: document.getElementById( 'binary-fs' ).textContent
-		});
 
 	composer = new THREE.EffectComposer(renderer);
 	
@@ -84,10 +78,10 @@ function onLoadTexture() {
 	composer.addPass(renderPass);
 
 	grayscalePass 	= new THREE.ShaderPass(grayscaleShader);
-	grayscalePass.needsSwap = false;
+	// grayscalePass.needsSwap = false;
 	composer.addPass(grayscalePass);
 
-	var n_smoothing = 10;
+	var n_smoothing = 1;
 
 	for (var i = 0; i < n_smoothing; i++){
 		suavizaPass 	= new THREE.ShaderPass(suavizaShader);
@@ -97,7 +91,7 @@ function onLoadTexture() {
 		composer.addPass(suavizaPass);
 	}
 
-	prewittPass 	= new THREE.ShaderPass(prewittShader);
+	// prewittPass 	= new THREE.ShaderPass(prewittShader);
 	// prewittPass.renderToScreen = true;
 	// composer.addPass(prewittPass);
 
@@ -105,6 +99,16 @@ function onLoadTexture() {
 	// sobelPass.renderToScreen = true;
 	composer.addPass(sobelPass);
 	
+	binaryShader = new THREE.ShaderMaterial( {
+			uniforms: {
+				tDiffuse: 	{ type: "t", value:texture  },
+				texA: 		{ type: "t", value:texture2 }, 
+				threshold: 	{ type: "float", value: 0.1},  
+			},
+			vertexShader: document.getElementById( 'base-vs' ).textContent,
+			fragmentShader: document.getElementById( 'binary-fs' ).textContent
+		});
+
 	binaryPass 	= new THREE.ShaderPass(binaryShader);
 	binaryPass.renderToScreen = true;
 	composer.addPass(binaryPass);

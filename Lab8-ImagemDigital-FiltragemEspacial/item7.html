@@ -19,18 +19,22 @@
 		precision mediump float;
 		
 		uniform sampler2D tDiffuse;
+		uniform sampler2D texA;
 		uniform float threshold;
 		varying vec2 vUv;
 			
 		void main(void) {	
 			vec4 c = texture2D(tDiffuse, vUv);
+			vec4 d = texture2D(texA, vUv);
 			float colorR = c.r, colorG = c.g, colorB = c.b;
 			if (c.r <= threshold || c.g <= threshold || c.b <= threshold){
 				colorR = 0.0;
 				colorG = 0.0;
 				colorB = 0.0;
 			}
-			gl_FragColor = vec4( colorR, colorG, colorB, 1.0);
+			// gl_FragColor = vec4( colorR, colorG, colorB, 1.0);
+			gl_FragColor = vec4( d.r-colorR, d.g-colorG, d.b-colorB, 1.0);
+			// gl_FragColor = vec4( d.rgb, 1.0);
 		}
 	</script>
 
