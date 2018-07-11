@@ -18,7 +18,7 @@ function init() {
 	
 	var textureLoader = new THREE.TextureLoader();
 	texture = textureLoader.load("../../Assets/Images/lena.png", onLoadTexture);
-	texture2 = textureLoader.load("../../Assets/Images/lena.png", onLoadTexture);
+	texture2 = textureLoader.load("../../Assets/Images/grayscale_lena.png", onLoadTexture);
 	var txtMaterial = new THREE.MeshBasicMaterial( { 
 					map : texture
 					} );
@@ -103,7 +103,8 @@ function onLoadTexture() {
 			uniforms: {
 				tDiffuse: 	{ type: "t", value:texture  },
 				texA: 		{ type: "t", value:texture2 }, 
-				threshold: 	{ type: "float", value: 0.1},  
+				threshold: 	{ type: "float", value: 0.0 },
+				k: 	{ type: "float", value: 1.0},
 			},
 			vertexShader: document.getElementById( 'base-vs' ).textContent,
 			fragmentShader: document.getElementById( 'binary-fs' ).textContent

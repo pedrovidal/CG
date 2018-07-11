@@ -21,6 +21,7 @@
 		uniform sampler2D tDiffuse;
 		uniform sampler2D texA;
 		uniform float threshold;
+		uniform float k;
 		varying vec2 vUv;
 			
 		void main(void) {	
@@ -33,7 +34,8 @@
 				colorB = 0.0;
 			}
 			// gl_FragColor = vec4( colorR, colorG, colorB, 1.0);
-			gl_FragColor = vec4( d.r-colorR, d.g-colorG, d.b-colorB, 1.0);
+			// gl_FragColor = vec4(  (colorR-d.r),  (colorG-d.g),  (colorB-d.b), 1.0);
+			gl_FragColor = vec4( d.r - (k * colorR), d.g - (k * colorG), d.b - (k * colorB), 1.0);
 			// gl_FragColor = vec4( d.rgb, 1.0);
 		}
 	</script>
@@ -48,16 +50,50 @@
 		vec4 c;
 
 		void main(void) {
-			c =  (	texture2D(tDiffuse, vUv) +
-					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, 0.0)) +
-					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, 0.0)) +
-					texture2D(tDiffuse, vUv + vec2(  0.0, -uPixelSize.y)) +
-					texture2D(tDiffuse, vUv + vec2(  0.0, uPixelSize.y)) +
-					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x,  uPixelSize.y)) +	   				
-					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x,  uPixelSize.y)) +   				
-					texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, -uPixelSize.y)) +	   				
-					texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, -uPixelSize.y))    				
-				  ) / 9.0;
+			// for (float i = -2.0; i <= 2.0; i++){
+			// 	for (float j = -2.0; j <= 2.0; j++){
+			// 		c += texture2D(tDiffuse, vUv + vec2( i * uPixelSize.x, j * uPixelSize.y));
+			// 	}
+			// }
+
+			c += texture2D(tDiffuse, vUv + vec2( -2.0 * uPixelSize.x, -2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -2.0 * uPixelSize.x, -1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -2.0 * uPixelSize.x,  0.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -2.0 * uPixelSize.x,  1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -2.0 * uPixelSize.x,  2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -1.0 * uPixelSize.x, -2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -1.0 * uPixelSize.x, -1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -1.0 * uPixelSize.x,  0.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -1.0 * uPixelSize.x,  1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2( -1.0 * uPixelSize.x,  2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  0.0 * uPixelSize.x, -2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  0.0 * uPixelSize.x, -1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  0.0 * uPixelSize.x,  0.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  0.0 * uPixelSize.x,  1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  0.0 * uPixelSize.x,  2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  1.0 * uPixelSize.x, -2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  1.0 * uPixelSize.x, -1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  1.0 * uPixelSize.x,  0.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  1.0 * uPixelSize.x,  1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  1.0 * uPixelSize.x,  2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  2.0 * uPixelSize.x, -2.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  2.0 * uPixelSize.x, -1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  2.0 * uPixelSize.x,  0.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  2.0 * uPixelSize.x,  1.0 * uPixelSize.y));
+			c += texture2D(tDiffuse, vUv + vec2(  2.0 * uPixelSize.x,  2.0 * uPixelSize.y));
+			c /= 25.0;
+
+
+			// c =  (	texture2D(tDiffuse, vUv) +
+			// 		texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, 0.0)) +
+			// 		texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, 0.0)) +
+			// 		texture2D(tDiffuse, vUv + vec2(  0.0, -uPixelSize.y)) +
+			// 		texture2D(tDiffuse, vUv + vec2(  0.0, uPixelSize.y)) +
+			// 		texture2D(tDiffuse, vUv + vec2(  uPixelSize.x,  uPixelSize.y)) +	   				
+			// 		texture2D(tDiffuse, vUv + vec2( -uPixelSize.x,  uPixelSize.y)) +   				
+			// 		texture2D(tDiffuse, vUv + vec2(  uPixelSize.x, -uPixelSize.y)) +	   				
+			// 		texture2D(tDiffuse, vUv + vec2( -uPixelSize.x, -uPixelSize.y))    				
+			// 	  ) / 9.0;
 
 
 			gl_FragColor = c;
