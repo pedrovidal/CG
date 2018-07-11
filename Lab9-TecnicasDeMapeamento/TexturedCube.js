@@ -40,7 +40,8 @@ function loadMesh(loadedMesh) {
 	
 	var textureLoader = new THREE.TextureLoader();
 	var texture = textureLoader.load("ash_uvgrid01.jpg");
-	var material = new THREE.MeshBasicMaterial({map:texture});
+	var texture2 = textureLoader.load("lena.png");
+	var material = [new THREE.MeshBasicMaterial({map:texture}), new THREE.MeshBasicMaterial({map:texture2})];
 	
 	loadedMesh.children.forEach(function (child) {
 		child.material = material;
