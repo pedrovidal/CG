@@ -25,9 +25,14 @@ function init() {
 
     // cria esfera do planeta Terra
     var sphereGeometry = new THREE.SphereGeometry(15, 60, 60);
-    var sphereMaterial = createEarthMaterial();
-    earthMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    var earthMaterial = createEarthMaterial();
+    earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
     scene.add(earthMesh);
+
+    var sphereGeometry = new THREE.SphereGeometry(15.1, 60, 60);
+    var cloudsMaterial = createCloudsMaterial();
+    cloudsMesh = new THREE.Mesh(sphereGeometry, cloudsMaterial);
+    scene.add(cloudsMesh);
 
     // Luz ambiente
     var ambientLight = new THREE.AmbientLight(0x111111);
@@ -51,18 +56,36 @@ function createEarthMaterial() {
     var textureLoader = new THREE.TextureLoader();
 
     var earthTexture    = textureLoader.load("earthmap4k.jpg");
+    var earthNormalsTexture    = textureLoader.load("earth_normal_2048.jpg");
+    var earthLightsTexture    = textureLoader.load("earth_lights_2048.png");
 
     var earthMaterial = new THREE.MeshPhongMaterial();
     earthMaterial.map = earthTexture;
+    earthMaterial.normalMap = earthNormalsTexture;
     
     return earthMaterial;
+}
+
+function createCloudsMaterial() {
+    
+    var textureLoader = new THREE.TextureLoader();
+
+    var cloudsTexture    = textureLoader.load("earth_clouds_2048.png");
+
+    var cloudsMaterial = new THREE.MeshPhongMaterial();
+    cloudsMaterial.map = cloudsTexture;
+    cloudsMaterial.transparent = true;
+    
+    return cloudsMaterial;
 }
 
 function render() {
 
     cameraControl.update();
 
-	earthMesh.rotation.y+=0.0005;
+    earthMesh.rotation.y+=0.0005;
+	
+    cloudsMesh.rotation.y-=0.0003;
 
     renderer.render(scene, camera);
 
