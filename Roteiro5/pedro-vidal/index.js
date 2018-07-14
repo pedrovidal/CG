@@ -15,28 +15,46 @@ function init() {
 	texture.magFilter = THREE.LinearFilter;
 	texture.format = THREE.RGBFormat;
 
-	var axis = new THREE.AxesHelper(10);
-	scene.add(axis);
+	var textureLoader = new THREE.TextureLoader();
+  	var normalMap = textureLoader.load("earth_normal_2048.jpg");
+  	var displacementMap = textureLoader.load("dispMap1.jpg");
+  	// var displacementMap = textureLoader.load("dispMap2.png");
+  	// var displacementMap = textureLoader.load("dispMap3.png");
+  	// var displacementMap = textureLoader.load("dispMap4.jpg");
 
-	var geometry = new THREE.BoxGeometry( 9, 9, 9 );
+	// var axis = new THREE.AxesHelper(10);
+	// scene.add(axis);
+
+	scene.background = new THREE.CubeTextureLoader()
+	.setPath( 'Park3Med/' )
+	.load( [
+		'px.jpg',
+		'nx.jpg',
+		'py.jpg',
+		'ny.jpg',
+		'pz.jpg',
+		'nz.jpg'
+	] );
+
+	var geometry = new THREE.BoxGeometry( 9, 9, 9, 100, 100, 100 );
 	geometry.scale( 0.5, 0.5, 0.5 );
 	var materials = [
-		new THREE.MeshPhongMaterial( { map: texture, normalMap: texture, normalScale: new THREE.Vector2(0.0, 0.0) } ), // right
+		new THREE.MeshStandardMaterial( { map: texture, normalMap: normalMap, /*normalScale: new THREE.Vector2(1.0, 1.0)*/ } ), // right
 		new THREE.MeshPhongMaterial( { map: texture, alphaMap: texture, transparent: true } ), // left
-		new THREE.MeshPhongMaterial( { color: 0x000000, specularMap: texture, shininess: 100 } ), // up
-		new THREE.MeshPhongMaterial( { map: texture, bumpMap: texture, bumpScale: 1.0 } ), // down
-		new THREE.MeshPhongMaterial( { map: texture, displacementMap: texture, displacementScale: 1.0, displacementBias: 0.0 } ), // front
-		new THREE.MeshPhongMaterial( { map: texture } ), // back
+		new THREE.MeshPhongMaterial( { color: 0x000000, specularMap: texture, shininess: 100 } ), // Top
+		new THREE.MeshStandardMaterial( { map: texture, bumpMap: texture, /*bumpScale: 1.0*/ } ), // Bottom
+		new THREE.MeshStandardMaterial( { map: texture, displacementMap: displacementMap, displacementScale: 0.4, displacementBias: -0.3 } ), // front
+		new THREE.MeshStandardMaterial( { envMap: scene.background, metalness: 1.0, roughness: 0.00 } ), // back
 	];
 
 	mesh = new THREE.Mesh( geometry, materials );
 	mesh.lookAt( camera.position );	
 	scene.add( mesh );
 
-	var sphereGeom = new THREE.SphereGeometry(0.5, 50, 50);
-	var sphereMat = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-	var sphere = new THREE.Mesh( sphereGeom, sphereMat );
-	scene.add( sphere );
+	// var sphereGeom = new THREE.SphereGeometry(0.5, 50, 50);
+	// var sphereMat = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+	// var sphere = new THREE.Mesh( sphereGeom, sphereMat );
+	// scene.add( sphere );
 
 	addLights();
 
@@ -85,6 +103,7 @@ function render() {
 }
 
 function addLights(){
+
 	var lightLeft = new THREE.DirectionalLight();
 	lightLeft.position.x = -90;
 	lightLeft.position.y = 0;
@@ -97,17 +116,17 @@ function addLights(){
 	lightRight.position.z = 0;
 	scene.add(lightRight);
 
-	var lightDown = new THREE.DirectionalLight();
-	lightDown.position.x = 0;
-	lightDown.position.y = -90;
-	lightDown.position.z = 0;
-	scene.add(lightDown);
+	var lightBottom = new THREE.DirectionalLight();
+	lightBottom.position.x = 0;
+	lightBottom.position.y = -90;
+	lightBottom.position.z = 0;
+	scene.add(lightBottom);
 
-	var lightUp = new THREE.DirectionalLight();
-	lightUp.position.x = 0;
-	lightUp.position.y = 90;
-	lightUp.position.z = 0;
-	scene.add(lightUp);
+	var lightTop = new THREE.DirectionalLight();
+	lightTop.position.x = 0;
+	lightTop.position.y = 90;
+	lightTop.position.z = 0;
+	scene.add(lightTop);
 
 	var lightFront = new THREE.DirectionalLight();
 	lightFront.position.x = 0;
