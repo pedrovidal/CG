@@ -17,10 +17,11 @@ function init() {
 
 	var textureLoader = new THREE.TextureLoader();
   	var normalMap = textureLoader.load("earth_normal_2048.jpg");
-  	var displacementMap = textureLoader.load("dispMap1.jpg");
+  	// var displacementMap = textureLoader.load("dispMap1.jpg");
   	// var displacementMap = textureLoader.load("dispMap2.png");
   	// var displacementMap = textureLoader.load("dispMap3.png");
   	// var displacementMap = textureLoader.load("dispMap4.jpg");
+  	var displacementMap = textureLoader.load("dispMap6.png");
 
 	// var axis = new THREE.AxesHelper(10);
 	// scene.add(axis);
